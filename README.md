@@ -1,15 +1,34 @@
+Contents
+========
+* [Prerequisites](#Prerequisites)
+* [System Requirement](#System-Requirements)
+* [How to use](#How-to-use)
+* [Header File Required](#Header-File-Required)
+* [Coding Section](#coding-section)
+    * [Server Side](#server)
+        * [Socket](#socket)
+        * [Bind and address](#bind)
+        * [Listen](#listen)
+        * [Accept](#accept)
+        * [Send and recv](#recv)
+    * [Client Side](#client)
+        * [Socket](#C_socket)
+        * [Connect](#C_connect)
+        * [send and recv](#C_recv)
+
+
 # SocketChatRoom
 Build your own real-time chat application using SocketChatApp. This GitHub repository provides a client-server architecture for seamless communication. Easy to use, easy to customize. ( c/c++)
 
-# Prerequisites:
+#  <div id="Prerequisites">  Prerequisites: </div>
 > Knowledge of the c or c++ programming language.<br>
 > Your intrest in learning socket programming.
 
-# System Requirements:
+# <div id="System-Requirements">System Requirements:</div>
 Linux or Unix (MacOs) based operating system.<br>
 (and on Windows system you might find difficult you have to import winsock2.h , ws2tcpip.h and windows.h blah blah blah...)<br>
 
-# How to use:
+# <div id ="How-to-use">How to use:</div>
 Clone this repository<br>
 Open terminal
 
@@ -24,7 +43,7 @@ open Another terminal<br>
  gcc client.c -o client && ./client
 ```
 
-# Header File  Required <br>
+# <div id="Header-File-Required">Header File  Required </div><br>
 For  standerd input output( for printf()  scanf() perror() )<br>
 ```c
 #include <stdio.h>
@@ -60,10 +79,10 @@ for boolean data type<br>
 ```
 
 
-# Let's come to coding section, baby!<br>
+# <div id="coding-section"> Let's come to coding section, baby! </div><br>
 
-## SERVER SIDE<br>
-### first we have to create a socket using socket() function<br>
+## <div id="server"> SERVER SIDE </div><br>
+#### <div id="socket">first we have to create a socket using socket() function</div><br>
 ```c
 int server_socket = socket(Int domanin, int type, int protocol
 ```
@@ -75,7 +94,7 @@ If the protocol argument is non-zero, it shall specify a protocol that is suppor
 on success, a file descriptor for the new socket is returned.  On error, -1 is returned, and errno is set appropriately.<br>
 
 
-### Then we have to bind the socket to a port using bind() function<br>
+### <div id="bind"> Then we have to bind the socket to a port using bind() function<br></div>
 ### but before that we have to create a struct sockaddr_in object and initialize it with the port and ip address<br>
 ```c++
 struct sockaddr_in server_address;
@@ -102,21 +121,21 @@ by using this command in terminal you can see all the port that are in use.<br>
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 ```
 Upon successful completion, bind() shall return 0; otherwise, -1 shall be returned and errno set to indicate the error.<br>
-#### And after succesfull binding then we have to listen for the incoming connection using listen() function<br>
+#### <div id ="listen">And after successful binding then we have to listen for the incoming connection using listen() function</div><br>
 ```c
 int listen_result= listen( server_socket, backlog);
 ```
 The backlog argument defines the maximum length to which the queue of pending connections for sockfd may grow. If a connection request arrives when the queue is full, the client may receive an error with an indication of ECONNREFUSED or, if the underlying protocol supports retransmission, the request may be ignored so that a later reattempt at connection succeeds.<br>
 ##### Upon successful completion, listen() shall return 0; otherwise, -1 shall be returned and errno set to indicate the error.<br>
 
-### Now we have to accept the incoming connection using accept() function<br>
+### <div id="accept"> Now we have to accept the incoming connection using accept() function<br></accept>
 ```c
 int client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_address_length);
 ```
 The accept() function shall extract the first connection on the queue of pending connections, create a new socket with the same socket type protocol and address family as the specified socket, and allocate a new file descriptor for that socket.<br>
 ##### Upon successful completion, accept() shall return the non-negative file descriptor of the accepted socket. Otherwise, -1 shall be returned and errno set to indicate the error.<br>
 
-### Now we can send and receive data using send() and recv() function<br>
+### <div id="recv">Now we can send and receive data using send() and recv() function<br></recv>
 ```c
 int send_result = send(client_socket, server_message, sizeof(server_message), 0);
 ```
@@ -127,29 +146,31 @@ The send() function shall initiate transmission of a message from the specified 
 int recv_result = recv(client_socket, client_response, sizeof(client_response), 0);
 ```
 The recv() function shall receive a message from a connection-mode or connectionless-mode socket. It is normally used with connected sockets because it does not permit the application to retrieve the source address of received data.<br>
-##### Upon successful completion, recv() shall return the length of the message in bytes. If no messages are available to be received and the peer has performed an orderly shutdown, recv() shall return 0. Otherwise, -1 shall be returned and errno set to indicate the error.<br>
+<h5> Upon successful completion, recv() shall return the length of the message in bytes. If no messages are available to be received and the peer has performed an orderly shutdown, recv() shall return 0. Otherwise, -1 shall be returned and errno set to indicate the error.<br></h5>
+--------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 
-## CLIENT SIDE<br>
-#### like same as server side we have to create a socket using socket() function<br>
+## <div id="client">CLIENT SIDE<br></div>
+#### <div id="C_socket"> like same as server side we have to create a socket using socket() function<br></div>
 ### first we have to create a socket using socket() function<br>
 ```c
  //int client_socket = socket(domanin,type, protocol)
    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
 ```
 
-### Then we have to connect to the server using connect() function<br>
+###  <div id="C_connect">Then we have to connect to the server using connect() function<br></connect>
 ```c
 int connection_status = connect(client_socket, (struct sockaddr *)&server_address, sizeof(server_address));
 ```
 Upon successful completion, connect() shall return 0; otherwise, -1 shall be returned and errno set to indicate the error.<br>
 
-### Now we can send and receive data using send() and recv() function<br>
+### <div id="C_send")>Now we can send and receive data using send() and recv() function<br>
 ```c
 int send_result = send(client_socket, client_message, sizeof(client_message), 0);
 ```
 The send() function shall initiate transmission of a message from the specified socket to its peer. The send() function shall send a message only when the socket is connected (including when the peer of a connectionless socket has been set via connect()).<br>
 ##### Upon successful completion, send() shall return the number of bytes sent. Otherwise, -1 shall be returned and errno set to indicate the error.<br>
-
+<div id="C_recv"> </div>
 ```c 
  int recv_result = recv(client_socket, server_response, sizeof(server_response), 0);
 ```
