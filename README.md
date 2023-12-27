@@ -1,27 +1,27 @@
 # SocketChatRoom
 Build your own real-time chat application using SocketChatApp. This GitHub repository provides a client-server architecture for seamless communication. Easy to use, easy to customize. ( c/c++)
 
-# Prerecquest:
-  > Knowledge of the c or c++ programming language.<br>
-  > Your intrest in learning socket programming.
-  
-# Systrem Requirements:
-  Linux or Unix (MacOs) based operating system.<br>
-  (and on Windows system you might find difficult you have to import winsock2.h , ws2tcpip.h and windows.h blah blah blah...)<br>
+# Prerequisites:
+> Knowledge of the c or c++ programming language.<br>
+> Your intrest in learning socket programming.
+
+# System Requirements:
+Linux or Unix (MacOs) based operating system.<br>
+(and on Windows system you might find difficult you have to import winsock2.h , ws2tcpip.h and windows.h blah blah blah...)<br>
 
 # How to use:
 Clone this repository<br>
-Open terminal 
+Open terminal
 
 ```terminal  
- cd socketChatRoom<br>
- gcc server.c -o server && ./server<br>
+ cd socketChatRoom
+ gcc server.c -o server && ./server
 ````
 
 open Another terminal<br>
 ```terminal
- cd socketChatRoom<br>
- gcc client.c -o client && ./client<br>
+ cd socketChatRoom
+ gcc client.c -o client && ./client
 ```
 
 # Header File  Required <br>
@@ -60,34 +60,36 @@ for boolean data type<br>
 ```
 
 
-# Working of SocketChatRoom!
- ### first we have to create a socket using socket() function<br>
+# Let's come to coding section, baby!<br>
+
+## SERVER SIDE<br>
+### first we have to create a socket using socket() function<br>
 ```c
 int server_socket = socket(Int domanin, int type, int protocol
 ```
-int domain = AF_INET (IPv4 protocol)<br>
-int type = SOCK_STREAM (TCP protocol)<br>
-int protocol = 0 (for IPv4 protocol)<br>
+int domain = AF_INET      //(IPv4 protocol)<br>
+int type = SOCK_STREAM    //(TCP protocol)<br>
+int protocol = 0          //(for IPv4 protocol)<br>
 If the protocol argument is non-zero, it shall specify a protocol that is supported by the address family. If the protocol argument is zero, the default protocol for this address family and type shall be used. The protocols supported by the system are implementation-defined.
 
 on success, a file descriptor for the new socket is returned.  On error, -1 is returned, and errno is set appropriately.<br>
 
 
 ### Then we have to bind the socket to a port using bind() function<br>
- ### but before that we have to create a struct sockaddr_in object and initialize it with the port and ip address<br>
+### but before that we have to create a struct sockaddr_in object and initialize it with the port and ip address<br>
 ```c++
 struct sockaddr_in server_address;
 address.sin_family = AF_INET;
 address.sin_port = htons(6969);
-char ip[]= "127.0.0.1" // localHost
+char ip[]= "127.0.0.1" ; // localHost
 inet_pton(AF_INET, ip, &address.sin_addr.s_addr);
 ```
 ------------------------------------------------------------------------------------------------------------------------------
- >**warning**:  if you are using port between 0 and 1023 (system port) then this might cause faild in binding cause they are reserve for essential system services and application that are used across different operating systems. <br>
+>**warning**:  if you are using port between 0 and 1023 (system port) then this might cause faild in binding cause they are reserve for essential system services and application that are used across different operating systems. <br>
 ``` terminal
  netstat -a |grep LISTEN
 ```
-or 
+or
 ``` terminal
  lsof -i -p | grep LISTEN
 ``` 
@@ -95,7 +97,7 @@ or
 by using this command in terminal you can see all the port that are in use.<br>
 ------------------------------------------------------------------------------------------------------------------------------
 
-### Now we can bind the socket to the port using bind() function<br>
+#### Now we can bind the socket to the port using bind() function<br>
 ```c
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 ```
@@ -127,5 +129,35 @@ int recv_result = recv(client_socket, client_response, sizeof(client_response), 
 The recv() function shall receive a message from a connection-mode or connectionless-mode socket. It is normally used with connected sockets because it does not permit the application to retrieve the source address of received data.<br>
 ##### Upon successful completion, recv() shall return the length of the message in bytes. If no messages are available to be received and the peer has performed an orderly shutdown, recv() shall return 0. Otherwise, -1 shall be returned and errno set to indicate the error.<br>
 
+## CLIENT SIDE<br>
+#### like same as server side we have to create a socket using socket() function<br>
+### first we have to create a socket using socket() function<br>
+```c
+ //int client_socket = socket(domanin,type, protocol)
+   int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+```
 
+### Then we have to connect to the server using connect() function<br>
+```c
+int connection_status = connect(client_socket, (struct sockaddr *)&server_address, sizeof(server_address));
+```
+Upon successful completion, connect() shall return 0; otherwise, -1 shall be returned and errno set to indicate the error.<br>
 
+### Now we can send and receive data using send() and recv() function<br>
+```c
+int send_result = send(client_socket, client_message, sizeof(client_message), 0);
+```
+The send() function shall initiate transmission of a message from the specified socket to its peer. The send() function shall send a message only when the socket is connected (including when the peer of a connectionless socket has been set via connect()).<br>
+##### Upon successful completion, send() shall return the number of bytes sent. Otherwise, -1 shall be returned and errno set to indicate the error.<br>
+
+```c 
+ int recv_result = recv(client_socket, server_response, sizeof(server_response), 0);
+```
+The recv() function shall receive a message from a connection-mode or connectionless-mode socket. It is normally used with connected sockets because it does not permit the application to retrieve the source address of received data.<br>
+##### Upon successful completion, recv() shall return the length of the message in bytes. If no messages are available to be received and the peer has performed an orderly shutdown, recv() shall return 0. Otherwise, -1 shall be returned and errno set to indicate the error.<br>
+
+and then we have to close the socket using close() function<br>
+```c
+close(client_socket);
+```
+## and this will in the while loop for continues  transmission of message 
