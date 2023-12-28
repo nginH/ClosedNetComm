@@ -148,7 +148,7 @@ int recv_result = recv(client_socket, client_response, sizeof(client_response), 
 The recv() function shall receive a message from a connection-mode or connectionless-mode socket. It is normally used with connected sockets because it does not permit the application to retrieve the source address of received data.<br>
 <h5> Upon successful completion, recv() shall return the length of the message in bytes. If no messages are available to be received and the peer has performed an orderly shutdown, recv() shall return 0. Otherwise, -1 shall be returned and errno set to indicate the error.<br></h5>
 --------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------
+
 
 ## <div id="client">CLIENT SIDE<br></div>
 #### <div id="C_socket"> like same as server side we have to create a socket using socket() function<br></div>
