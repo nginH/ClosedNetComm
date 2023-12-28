@@ -46,8 +46,6 @@ void msgSend( int *clientSocket){
 
      //=============================//
 
-//read(ClientServerFileDiscription,buffer, 1023);
-
 void msgrecv(int *clientSocket){
      char revMsgBuffer[1024];
      memset(revMsgBuffer, '\0', 1024);
@@ -58,10 +56,6 @@ void msgrecv(int *clientSocket){
           printf("recv msg: %s", revMsgBuffer);
      }
 }
-
-
-
-
 
      // SERVER SIDE
 int port= 6969;
@@ -78,7 +72,6 @@ int main(void){
      inet_pton(AF_INET,"127.0.0.1",&address.sin_addr.s_addr);
      int BindResult= bind(serverSocketFileDiscription, (struct sockaddr*) &address,sizeof address);
 
-          //  BindResult?exit(2):printf("binding sucessful\n");
      if (BindResult==0){
           printf("binding sucessful\n");
      }else{
@@ -108,26 +101,12 @@ int main(void){
      char buffer[1024];
      memset(buffer, '\0', 1024);
      read(ClientServerFileDiscription,buffer, 1023); // -1 for null char
-                                                     //  std::string message= "hello from server\n";
 
-
-          //    msgSend(&ClientServerFileDiscription);
      std::thread  SendThread(msgSend , &ClientServerFileDiscription);
      std::thread  resvThread(msgrecv , &ClientServerFileDiscription);
 
-
-
      SendThread.join();
      resvThread.join();
-
-
-          //while(true) {
-          //  std::cin >> msg;
-          //  fgets(msg, 1024, stdin);
-          //  send(ClientServerFileDiscription, msg, strlen(msg), 0);
-          //  memset(msg, '\0', 1024);
-          //}
-          //  printf("CLIENT: %s\n", buffer);
 
 
 
