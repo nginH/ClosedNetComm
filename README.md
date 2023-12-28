@@ -15,7 +15,7 @@ Contents
         * [Socket](#C_socket)
         * [Connect](#C_connect)
         * [send and recv](#C_recv)
-
+* [Multithreading](#milti)
 
 # SocketChatRoom
 Build your own real-time chat application using SocketChatApp. This GitHub repository provides a client-server architecture for seamless communication. Easy to use, easy to customize. ( c/c++)
@@ -47,6 +47,7 @@ open Another terminal<br>
 For  standerd input output( for printf()  scanf() perror() )<br>
 ```c
 #include <stdio.h>
+#include <iostream>
 ``` 
 For exit function (exit(int))<br>
 ```c
@@ -61,7 +62,7 @@ for close function (close(int))<br>
 ```c
 #include <unistd.h>
 ```
-for string length  we use strlen() function<br>
+for string length  we use strlen() strcmp()  strcat() function<br>
 ```c
 #include <string.h>
 ```
@@ -77,18 +78,21 @@ for boolean data type<br>
 ```c    
 #include <stdbool.h>
 ```
-
+for multithreading
+```c
+#include <thread>
+```
 
 # <div id="coding-section"> Let's come to coding section, baby! </div><br>
+
+<img src="https://media.geeksforgeeks.org/wp-content/uploads/20220330131350/StatediagramforserverandclientmodelofSocketdrawio2-448x660.png" alt="alt text" />
+
 
 ## <div id="server"> SERVER SIDE </div><br>
 #### <div id="socket">first we have to create a socket using socket() function</div><br>
 ```c
 int server_socket = socket(Int domanin, int type, int protocol
 ```
-int domain = AF_INET      //(IPv4 protocol)<br>
-int type = SOCK_STREAM    //(TCP protocol)<br>
-int protocol = 0          //(for IPv4 protocol)<br>
 If the protocol argument is non-zero, it shall specify a protocol that is supported by the address family. If the protocol argument is zero, the default protocol for this address family and type shall be used. The protocols supported by the system are implementation-defined.
 
 on success, a file descriptor for the new socket is returned.  On error, -1 is returned, and errno is set appropriately.<br>
@@ -181,4 +185,37 @@ and then we have to close the socket using close() function<br>
 ```c
 close(client_socket);
 ```
-## and this will in the while loop for continues  transmission of message 
+#### And this will in the while loop for continues  transmission of message
+
+-----
+# <div id="milti">
+> **caution** : This program run total of 3 threads and I'm using FileDescription in two separate thread and since i'm not manipulating content of FileDescription so there will no race or  <mark> DEADLOCK</mark> condition arriver;
+> <br> But if you want you can use MUTEX for full proof deadlock
+<br>
+<div id="need"> <h3> Why needed?</h3><br>
+ let assume your program is single threaded like
+
+```c
+int main(void){
+   int x;
+   std::cin>>x;
+   int y=5;
+   std::cout<<y
+}
+ ```
+assume main fxn is executing std::cin and you want to print y but before that you have to wait for user input to input the value of x then only further execution win happen;<br>
+now come to main topic of socket programming<br>
+If your are sending some string and client send you data then it will missed by your program and you will get some garbage value in your output<br>
+so to avoid this we have to use multithreading for seamlessly chat between the user <br>
+```c
+// std::thread  ThreadName(function , perimeter, perimeter....);
+   std::thread  recvThread(msgrecv  , &ClientServerFileDiscription);
+   resThread.join(); // 
+```
+here msgrecv is a function that will receive the message from the client and store it in the buffer and ClientServerFileDiscription is a file discription of client socket we are sending as a perimeter<br>
+we must join the thread otherwise it will terminate the program as main function completed its process<br>
+
+</div>
+
+
+
