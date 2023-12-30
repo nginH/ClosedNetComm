@@ -34,15 +34,16 @@ Open terminal
 
 ```terminal  
  cd socketChatRoom
- gcc server.c -o server && ./server
+ g++ server.c -o server  -std=c++17 -pthread && clear &&  && ./server
 ````
 
 open Another terminal<br>
 ```terminal
  cd socketChatRoom
- gcc client.c -o client && ./client
+ g++ client.c -o client -std=c++17 -pthread && clear && ./client
 ```
-
+ >> here's breakdown of above terminal command : <br>
+> > g++ :- telling terminal to compile for c++ file  the <client.cpp> this the directory of the cpp  file < -o client > and output it in a client file and  < -std=c++17 > w're stating compilar to use c++17 (you can use 11 -upper) and -pthread to include this while compailing cause this file is multithreaded  and  clear the output of terminal and  execute ./client and similarly for server.cpp
 # <div id="Header-File-Required">Header File  Required </div><br>
 For  standerd input output( for printf()  scanf() perror() )<br>
 ```c
@@ -85,7 +86,7 @@ for multithreading
 
 # <div id="coding-section"> Let's come to coding section, baby! </div><br>
 
-<img src="https://media.geeksforgeeks.org/wp-content/uploads/20220330131350/StatediagramforserverandclientmodelofSocketdrawio2-448x660.png" alt="alt text" />
+<img src="https://github.com/harshuuanand/SocketChatRoom/assets/80211435/4437973d-c5b2-45dc-8ed1-ebb0916243a4" />
 
 
 ## <div id="server"> SERVER SIDE </div><br>
