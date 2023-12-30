@@ -34,13 +34,13 @@ Open terminal
 
 ```terminal  
  cd socketChatRoom
- gcc server.c -o server && ./server
+ gcc server.c -o server  -std=c++17 -pthread && clear &&  && ./server
 ````
 
 open Another terminal<br>
 ```terminal
  cd socketChatRoom
- gcc client.c -o client && ./client
+ gcc client.c -o client -std=c++17 -pthread && clear && ./client
 ```
 
 # <div id="Header-File-Required">Header File  Required </div><br>
