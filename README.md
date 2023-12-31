@@ -37,13 +37,13 @@ Open terminal
 
 ```terminal  
  cd socketChatRoom
- g++ server.cpp -o server  -std=c++17 -pthread && clear && ./server
+ g++ server.c -o server  -std=c++17 -pthread && clear &&  && ./server
 ````
 
 open Another terminal<br>
 ```terminal
  cd socketChatRoom
- g++ client.cpp -o client -std=c++17 -pthread && clear && ./client
+ g++ client.c -o client -std=c++17 -pthread && clear && ./client
 ```
 >> here's breakdown of above terminal command : <br>
 > > g++ :- telling terminal to compile for c++ file  the <client.cpp> this the directory of the cpp  file < -o client > and output it in a client file and  < -std=c++17 > w're stating compilar to use c++17 (you can use 11 -upper) and -pthread to include this while compailing cause this file is multithreaded  and  clear the output of terminal and  execute ./client and similarly for server.cpp
@@ -222,12 +222,12 @@ SHUT_RDWR mean shutdown read and write ;
 <div id="send">
 std::thread  SendThread(msgSend , clientDetails);<br>
 this will create new thread separate from main thread  this call msgSend with argument clientDetails <br>
+
 ```C++
 void msgSend(CliDetails client){
      char name[1024]=""; // creating the name variable 
      char msg[1024];     // creatimng the msg varible through which we send message to all the client
      uint64_t namelen= strlen(name); // if we assign the name the namelen will store the the lenght of name
-
      while(true) {  //  for continusely send message we server want to send after each itration Fgets () will will wait for user input 
           fgets(msg, 1024, stdin);  // continusely taking input of string from terminal
           int x=strcmp(msg, "exit\n");  // comparing the input message with exit for exiting from programm
@@ -255,12 +255,17 @@ void msgSend(CliDetails client){
      return;
 }
 
+```
+
 </div>
 
 <div id="resv">
 
-```
+
+
 now message receive function<br>
+
+
 ```C++
 
 void msgrecv(CliDetails client){
