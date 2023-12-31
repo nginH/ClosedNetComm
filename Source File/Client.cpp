@@ -38,77 +38,97 @@ SOFTWARE.
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 
-int port=6969;
+int port = 6969;
 
 
-void recvfxn(int *clientSocket);
-void sendFxn(int *clientSocket);
 
-int main(void ){
+struct details {
+  int clientSocketfileDiscription;
+  char name[2048];
+  int namelen;
+  details() {
+       this->clientSocketfileDiscription = -1;
+       this->namelen = 0;
+       memset(name, '\0', 2048);
+  }
+};
+typedef struct details *ClientDetails;
 
-   int clientSocketFileDisctiption= socket(AF_INET, SOCK_STREAM, 0);
-   if (clientSocketFileDisctiption<0){
-      perror("socket creation faild\n");
-      exit(1);
-   }
+void recvfxn(ClientDetails);
+void sendFxn(ClientDetails);
 
-   struct sockaddr_in address;
-   address.sin_port= htons(port);
-   address.sin_family= AF_INET;
-   inet_pton(AF_INET, "172.16.56.159", &address.sin_addr.s_addr);
 
-   int connectResult= connect(clientSocketFileDisctiption, (struct sockaddr*) &address, sizeof address);
+int main(void) {
+     ClientDetails client = new details();
 
-   if (connectResult==0){
-      printf("connection succesfull\n");
-   }else{
-      printf("%d\n",errno);
-      perror("connection field Server not yet UP \n");
-      exit(2);
-   }
+     client->clientSocketfileDiscription = socket(AF_INET, SOCK_STREAM, 0);
+     if (client->clientSocketfileDiscription < 0) {
+          perror("socket creation faild\n");
+          exit(1);
+     }
 
-   std::thread sendthread(sendFxn , &clientSocketFileDisctiption);
-   std::thread recvthread(recvfxn , &clientSocketFileDisctiption);
+     struct sockaddr_in address;
+     address.sin_port = htons(port);
+     address.sin_family = AF_INET;
+     inet_pton(AF_INET, "172.16.56.159", &address.sin_addr.s_addr);
 
-   sendthread.join();
-   recvthread.join();
+     int connectResult = connect(client->clientSocketfileDiscription, (struct sockaddr *) &address, sizeof address);
+     if (connectResult == 0) {
+          printf("connection successful\n");
+     } else {
+          printf("%d\n", errno);
+          perror("connection field Server not yet UP \n");
+          exit(2);
+     }
 
-   close(clientSocketFileDisctiption);
-   shutdown(clientSocketFileDisctiption, SHUT_RDWR);
+     printf("enter your name:  ");
+     fgets(client->name, 127, stdin);
+     client->namelen = strlen(client->name);
+     client->name[client->namelen-1]='\0';
+     client->name[client->namelen+1]='\0';
+//     char firstJoinMsg[]=" join the chat";
+//     strcat(client->name, firstJoinMsg);
+     std::thread sendthread(sendFxn, client);
+     std::thread recvthread(recvfxn, client);
+
+     sendthread.join();
+     recvthread.join();
+
+     close(client->clientSocketfileDiscription);
+     shutdown(client->clientSocketfileDiscription, SHUT_RDWR);
 
 }
 
-void recvfxn(int *clientSocket){
-   char reciveBUFFER[1024];
-   int64_t recvByte=0;
-   while (true) {
-      recvByte= recv(*clientSocket, reciveBUFFER, 1023, 0);
-      if     (recvByte<=0)  break;
-      else if(recvByte==0) continue;
-      else   std::cout<< reciveBUFFER << "\n";
-      memset(reciveBUFFER, '\0', 1024);
-   }
+void recvfxn(ClientDetails client) {
+     char reciveBUFFER[1024];
+     int64_t recvByte = 0;
+     while (true) {
+          recvByte = recv(client->clientSocketfileDiscription, reciveBUFFER, 1023, 0);
+          if (recvByte <= 0) break;
+          else if (recvByte == 0) continue;
+          else std::cout << reciveBUFFER << "\n";
+          memset(reciveBUFFER, '\0', 1024);
+     }
 }
 
-void sendFxn(int *clientSocket){
-   char sendmsg[1024];
-   char name[1024]="anoop ";
-   uint64_t namelen= strlen(name);
-
-   printf("Enter msg: ");
-   while (true) {
-      fgets(sendmsg, 1024, stdin);
-      if (strcmp(sendmsg, "exit")==0) {
-         break;
-      }
-      if (strlen(sendmsg)>1) {
-         strcat(name, ": ");
-         strcat(name,sendmsg );
-         send(*clientSocket, name, strlen(name), 0);
-      }
-      for (int i=0; sendmsg[i]; ++i) {
-         name[i+namelen]='\0';
-      }
-   }
+void sendFxn(ClientDetails client) {
+     char sendmsg[1024];
+     printf("Enter msg: ");
+     while (true) {
+          fgets(sendmsg, 1024, stdin);
+          if (strcmp(sendmsg, "exit\n") == 0) {
+               close(client->clientSocketfileDiscription);
+               shutdown(client->clientSocketfileDiscription, SHUT_RDWR);
+               break;
+          }
+          strcat(client->name, ": ");
+          strcat(client->name, sendmsg);
+          if (strlen(sendmsg) > 1) {
+               send(client->clientSocketfileDiscription, client->name, strlen(client->name), 0);
+          }
+          for (int i = 0; sendmsg[i]; ++i) {
+               client->name[i + client->namelen] = '\0';
+          }
+     }
 }
 

@@ -22,8 +22,6 @@ SOFTWARE.
 */
 
 
-//=====================SERVER SIDE=========================//
-
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -32,37 +30,33 @@ SOFTWARE.
 #include <cstring>
 #include <thread>
 #include <chrono>
-#include <poll.h>
 #include <sys/select.h>
-
-//int ClientServerFileDiscription= accept(serverSocketFileDiscription,(struct sockaddr*)&address, &addressLen);\
-
 
 int port    = 6969;
 int backlog = 10;
 
-struct Datails {
-  int serverSocketFileDiscription;
-  int clientFileDiscription;
-  int NumberOfClient;
-  int backlog;
-  int port;
-  int addressFamily;
-  char name[1024];
-  char msgRecv[1024];
-  char msgSend[1024];
-  Datails(){
-       this->serverSocketFileDiscription=-1;
-       this->clientFileDiscription=-1;
-       this->NumberOfClient=0;
-       this->backlog=10;
-       this->port=6969;
-       this->addressFamily=AF_INET;
-       memset(this->name, '\0', 1024);
-       memset(this->msgRecv, '\0', 1024);
-       memset(this->msgSend, '\0', 1024);
-  }
-};
+//struct Datails {
+//  int serverSocketFileDiscription;
+//  int clientFileDiscription;
+//  int NumberOfClient;
+//  int backlog;
+//  int port;
+//  int addressFamily;
+//  char name[1024];
+//  char msgRecv[1024];
+//  char msgSend[1024];
+//  Datails(){
+//       this->serverSocketFileDiscription=-1;
+//       this->clientFileDiscription=-1;
+//       this->NumberOfClient=0;
+//       this->backlog=10;
+//       this->port=6969;
+//       this->addressFamily=AF_INET;
+//       memset(this->name, '\0', 1024);
+//       memset(this->msgRecv, '\0', 1024);
+//       memset(this->msgSend, '\0', 1024);
+//  }
+//};
 
 
 struct ClientDetails{
@@ -82,9 +76,7 @@ struct ClientDetails{
        memset(this->msgSend, '\0', 1023);
   }
 };
-
 typedef struct ClientDetails *CliDetails;
-
 
 void msgSend           (CliDetails);
 void msgrecv           (CliDetails);
@@ -109,18 +101,18 @@ int main(void){
 
      //  BindResult?exit(2):printf("binding sucessful\n");
      if (BindResult==0){
-          printf("binding sucessful\n");
+          printf("binding successful\n");
      }else{
-          perror("biding unsucessful\n");
+          perror("biding unsuccessful\n");
           exit(2);
      }
 
      int listenRusult = listen(serverSocketFileDiscription, backlog);
 
      if (listenRusult==0){
-          printf("listning sucessful\n");
+          printf("listning successful\n");
      }else{
-          perror("listning unsucessful\n");
+          perror("listening unsuccessful\n");
           exit(3);
      }
 
@@ -139,7 +131,7 @@ int main(void){
                SendThread.detach();
                resvThread.detach();
           }else{
-               perror("error in acceptng incoming conection\n");
+               perror("error in accepting incoming connection\n");
                errno;
                break;
           }
@@ -163,13 +155,13 @@ void msgSend(CliDetails client){
           fgets(msg, 1024, stdin);
           int x=strcmp(msg, "exit\n");
           if (x==0) {
-               printf("shutting down....\n");
-               close(client->serverSocketFileDiscription);
-               shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
-               for (int i=0; i<client->NumberOfClient; ++i) {
-                    close(client->whichClient[i]);
-                    shutdown(client->whichClient[i], SHUT_RDWR);
-               }
+//               printf("2. shutting down....\n");
+//               close(client->serverSocketFileDiscription);
+//               shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
+//               for (int i=0; i<client->NumberOfClient; ++i) {
+//                    close(client->whichClient[i]);
+//                    shutdown(client->whichClient[i], SHUT_RDWR);
+//               }
                exit(EXIT_SUCCESS);
           }
           if (strlen(msg)>1) {
@@ -183,7 +175,6 @@ void msgSend(CliDetails client){
                name[i+namelen]='\0';
           }
      }
-     return;
 }
 
 
@@ -191,77 +182,59 @@ void msgSend(CliDetails client){
 void msgrecv(CliDetails client){
      char revMsgBuffer[1024];
      memset(revMsgBuffer, '\0', 1024);
-//     int64_t readbyte=0;
-     struct pollfd fds[20];
-     fds[0].fd= client->serverSocketFileDiscription;
-     fds[0].events=POLLIN;
-     while (true){
+
+     fd_set readfd;
+     int maxfd=-1;
+     while (true) {
+          __DARWIN_FD_ZERO(&readfd);
           for (int i=0; i<client->NumberOfClient; ++i) {
-               if (client->whichClient[i]!=-1) {
-                    fds[i+1].fd=client->whichClient[i];
-                    fds[i+1].events=POLLIN;
+               __DARWIN_FD_SET(client->whichClient[i], &readfd);
+               if (client->whichClient[i]>maxfd) {
+                    maxfd=client->whichClient[i];
                }
           }
-          int x=   poll(fds, client->NumberOfClient, -1);
-//          printf("<  %d > ", x);
+          int ready= select(maxfd+1, &readfd, nullptr, nullptr, nullptr);
+          if (ready==-1) {
+               perror("select error\n");
+               exit(EXIT_FAILURE);
+          }
           for (int i=0; i<client->NumberOfClient; ++i) {
-               if (fds[i].revents&POLLIN) {
+               if (__DARWIN_FD_ISSET(client->whichClient[i], &readfd)) {
                     char buffer[1024];
-                    int64_t byteread= recv(fds[i].fd, buffer, 1024, 0);
-                    if (byteread<0) {
-                         exit(5);
-                    }else if (byteread==1) continue;
-                    else{
-                         std::cout<<"msg: "<<buffer<<"\n";
-                         client->tempfd=fds[i].fd;
+                    int64_t byteResv=read(client->whichClient[i], buffer, 1024);
+                    if (byteResv<0) {
+                         printf("1. shutting down....\n");
+                         close(client->serverSocketFileDiscription);
+                         shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
+                         for (int i=0; i<client->NumberOfClient; ++i) {
+                              close(client->whichClient[i]);
+                              shutdown(client->whichClient[i], SHUT_RDWR);
+                         }
+                         exit(EXIT_SUCCESS);
+                    }else if (byteResv>1){
+                         client->tempfd=client->whichClient[i];
+                         printf("%s\n", buffer);
                          strcpy(client->MsgResv, buffer);
                          messageBroadcast(client);
                          memset(buffer, '\0', 1024);
                     }
                }
           }
-
-
-
      }
-
-
-
-//     while (true) {
-//               readbyte=recv(client->whichClient[0], revMsgBuffer, 1023, 0);
-//          int pollResult= poll(client->whichClient, x, 500);
-////          printf("msg resv : client fd: %d\n", client->ClientSocketFileDiscription);
-//          if (readbyte<=0) {
-//               break;
-//          }else if (readbyte==1){
-//               continue;
-//          }else{
-//               strcpy(client->MsgResv, revMsgBuffer);
-//               messageBroadcast(client);
-//               printf("%s\n", revMsgBuffer);
-//          }
-//     }
-//     return;
 }
-
 void messageBroadcast(CliDetails client){
      for (int i=0; i<client->NumberOfClient; ++i) {
           if (client->whichClient[i]!=client->tempfd)
                send(client->whichClient[i], client->MsgResv, strlen(client->MsgResv), 0);
      }
      memset(client->MsgResv, '\0', 1024);
-
-     return;
 }
 
-//int ClientServerFileDiscription= accept(serverSocketFileDiscription,(struct sockaddr*)&address, &addressLen);
 int * acceptFxn( int * serverFileDiscription , struct sockaddr_in address){
      int clientServerFileDiscription;
      socklen_t addressLen= sizeof(address);
      while (true) {
           clientServerFileDiscription=accept(*serverFileDiscription, (struct sockaddr *)&address, &addressLen);
-
           std::this_thread::sleep_for(std::chrono::milliseconds(500));
      }
-
 }
