@@ -37,13 +37,13 @@ Open terminal
 
 ```terminal  
  cd socketChatRoom
- g++ server.c -o server  -std=c++17 -pthread && clear &&  && ./server
+ g++ server.cpp -o server  -std=c++17 -pthread && clear && ./server
 ````
 
 open Another terminal<br>
 ```terminal
  cd socketChatRoom
- g++ client.c -o client -std=c++17 -pthread && clear && ./client
+ g++ client.cpp -o client -std=c++17 -pthread && clear && ./client
 ```
 >> here's breakdown of above terminal command : <br>
 > > g++ :- telling terminal to compile for c++ file  the <client.cpp> this the directory of the cpp  file < -o client > and output it in a client file and  < -std=c++17 > w're stating compilar to use c++17 (you can use 11 -upper) and -pthread to include this while compailing cause this file is multithreaded  and  clear the output of terminal and  execute ./client and similarly for server.cpp
