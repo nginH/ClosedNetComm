@@ -35,28 +35,28 @@ SOFTWARE.
 int port    = 6969;
 int backlog = 10;
 
-//struct Datails {
-//  int serverSocketFileDiscription;
-//  int clientFileDiscription;
-//  int NumberOfClient;
-//  int backlog;
-//  int port;
-//  int addressFamily;
-//  char name[1024];
-//  char msgRecv[1024];
-//  char msgSend[1024];
-//  Datails(){
-//       this->serverSocketFileDiscription=-1;
-//       this->clientFileDiscription=-1;
-//       this->NumberOfClient=0;
-//       this->backlog=10;
-//       this->port=6969;
-//       this->addressFamily=AF_INET;
-//       memset(this->name, '\0', 1024);
-//       memset(this->msgRecv, '\0', 1024);
-//       memset(this->msgSend, '\0', 1024);
-//  }
-//};
+struct Datails {
+  int serverSocketFileDiscription;
+  int clientFileDiscription;
+  int NumberOfClient;
+  int backlog;
+  int port;
+  int addressFamily;
+  char name[1024];
+  char msgRecv[1024];
+  char msgSend[1024];
+  Datails(){
+       this->serverSocketFileDiscription=-1;
+       this->clientFileDiscription=-1;
+       this->NumberOfClient=0;
+       this->backlog=10;
+       this->port=6969;
+       this->addressFamily=AF_INET;
+       memset(this->name, '\0', 1024);
+       memset(this->msgRecv, '\0', 1024);
+       memset(this->msgSend, '\0', 1024);
+  }
+};
 
 
 struct ClientDetails{
