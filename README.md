@@ -103,7 +103,7 @@ int *acceptFxn (int *, struct sockaddr*, int *);
 
 ### Now come to main() fxn;
 <div id="socket">
-first we have to create a socket using [socket()](https://pubs.opengroup.org/onlinepubs/009695399/functions/socket.html) function<br>
+first we have to create a socket using [socket()](#https://pubs.opengroup.org/onlinepubs/009695399/functions/socket.html) function<br>
 ```c 
 int serverSocketFileDiscription= socket(AF_INET, SOCK_STREAM, 0);
 // we have to cross check the socket is created or not
@@ -134,7 +134,7 @@ struct  sockaddr_in address;
 > so use port between 1024 and 65535 (user port) <br>
 </div>
 
-<div id="bind"> Now we have to bind the socket to the port using [bind()](https://pubs.opengroup.org/onlinepubs/009695399/functions/bind.html) function . <br> on seccessful binding we have to print the message otherwise we have to close the serverSocketFileDiscription and exit the program<br>
+<div id="bind"> Now we have to bind the socket to the port using [bind()](#https://pubs.opengroup.org/onlinepubs/009695399/functions/bind.html) function . <br> on seccessful binding we have to print the message otherwise we have to close the serverSocketFileDiscription and exit the program<br>
 
 ```C++
      int BindResult= bind(serverSocketFileDiscription, (struct sockaddr*) &address,sizeof address);
@@ -149,7 +149,7 @@ struct  sockaddr_in address;
 ```
 </div>
 
-Now we have to listen for the incoming connection using [listen()](https://pubs.opengroup.org/onlinepubs/009695399/functions/listen.html) function<br>
+Now we have to listen for the incoming connection using [listen()](#https://pubs.opengroup.org/onlinepubs/009695399/functions/listen.html) function<br>
 ```C++
  int listenRusult = listen(serverSocketFileDiscription, backlog);
 
@@ -168,7 +168,7 @@ Creating new variable for everything like  serverSocketFileDescription, number o
 ```
 <div id="accept">
 
-now in while loop we have to accept the incoming connection using [accept()](https://pubs.opengroup.org/onlinepubs/009695399/functions/accept.html) function<br>
+now in while loop we have to accept the incoming connection using [accept()](#https://pubs.opengroup.org/onlinepubs/009695399/functions/accept.html) function<br>
 ```C++
  while (true) {
           socklen_t addressLen= sizeof address;
