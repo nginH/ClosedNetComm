@@ -69,8 +69,10 @@ open Another terminal<br>
 </div>
 
 -----
+
 <div id="#struct">
 ### In this section structure is created that are using throughout the program to get detail of program<br>
+   
 ```c++
 struct ClientDetails{
      int ClientSocketFileDiscription;
@@ -93,6 +95,8 @@ struct ClientDetails{
 </div>
 
 > here we declare the prototype of function that are using in the program<br>
+
+
 ```c++
 void msgSend           (CliDetails);
 void msgrecv           (CliDetails);
@@ -102,6 +106,7 @@ int *acceptFxn (int *, struct sockaddr*, int *);
 ```
 
 ### Now come to main() fxn;
+
 <div id="socket">
 first we have to create a socket using [socket()](#https://pubs.opengroup.org/onlinepubs/009695399/functions/socket.html) function<br>
 ```c 
