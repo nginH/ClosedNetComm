@@ -1,6 +1,6 @@
 /* MIT License
 
-Copyright (c) 2023 Harsh Anand
+Copyright (c) 2024-2029 Harsh Anand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,220 +21,845 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-#include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <cstring>
-#include <thread>
 #include <chrono>
+#include <cstring>
+#include <iostream>
+#include <thread>
+#include <unistd.h>
+
+#ifdef __MACH__
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#endif
 
-int port    = 6969;
-int backlog = 10;
+#ifdef __unix__
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#define __DARWIN_FD_ZERO(p) FD_ZERO(p)
+#define __DARWIN_FD_SET(fd, p) FD_SET(fd, p)
+#define __DARWIN_FD_ISSET(fd, p) FD_ISSET(fd, p)
+#endif
 
-struct Datails {
-  int serverSocketFileDiscription;
-  int clientFileDiscription;
-  int NumberOfClient;
-  int backlog;
-  int port;
-  int addressFamily;
-  char name[1024];
-  char msgRecv[1024];
-  char msgSend[1024];
-  Datails(){
-       this->serverSocketFileDiscription=-1;
-       this->clientFileDiscription=-1;
-       this->NumberOfClient=0;
-       this->backlog=10;
-       this->port=6969;
-       this->addressFamily=AF_INET;
-       memset(this->name, '\0', 1024);
-       memset(this->msgRecv, '\0', 1024);
-       memset(this->msgSend, '\0', 1024);
-  }
-};
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#define __DARWIN_FD_ZERO(p) FD_ZERO(p)
+#define __DARWIN_FD_SET(fd, p) FD_SET(fd, p)
+#define __DARWIN_FD_ISSET(fd, p) FD_ISSET(fd, p)
+#endif
 
+uint32_t port = 6969;
+uint32_t backlog = 10;
+uint32_t SIZE = 1024;
 
-struct ClientDetails{
-  int ClientSocketFileDiscription;
-  int serverSocketFileDiscription;
-  int whichClient[20];
-  int NumberOfClient;
-  char msgSend[1024];
-  char MsgResv[2048];
-  int tempfd;
-  ClientDetails( int fd){
-       this->ClientSocketFileDiscription=fd;
-       this->tempfd=-1;
-       this->NumberOfClient=0;
-       memset(this->whichClient, -1, 20);
-       memset(this->MsgResv, '\0', 1023);
-       memset(this->msgSend, '\0', 1023);
-  }
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+//
+//#define auth_createSet "__creteSet__69k"
+//#define auth_createSetComplete "__createSetComplete__69k"
+//#define auth_putAnswer "__putAnswer__69k"
+//#define auth_putAnswerComplete "__putAnswerComplete__69k"
+
+// client details structure
+
+////////////////--------- Container Construction----------///////////////////
+//Encapsulates information about a connected client within a server application.
+/*
+ * Members:
+        * ClientSocketFileDiscription: (int32_t) File descriptor for the client's socket.
+        * serverSocketFileDiscription: (int32_t) File descriptor for the server's socket (for server-side functions).
+        * whichClient[30]: (int32_t array) Stores file descriptors of up to 30 connected clients, used for broadcasting messages.
+        * NumberOfClient: (uint64_t) Number of currently connected clients.
+        * finalExit: (bool) Flag indicating whether the server should shut down.
+        * broadCastingPrevMsgToClient: (bool) Flag controlling whether to broadcast previous chat messages to a newly connected client.
+        * ChatMsgStatus: (bool) Indicates whether chat mode is active.
+        * msgSend[1024]: (char array) Buffer for storing outgoing messages.
+        * MsgResv[2048]: (char array) Buffer for storing received messages.
+        * tempfd: (int32_t) Temporary file descriptor used for broadcasting operations.
+*/
+struct ClientDetails {
+       int32_t ClientSocketFileDiscription;
+       int32_t serverSocketFileDiscription;
+       int32_t whichClient[30]{};
+       uint64_t NumberOfClient;
+       bool finalExit;
+       bool broadCastingPrevMsgToClient;
+       bool ChatMsgStatus;
+       char msgSend[1024]{};
+       char MsgResv[2048]{};
+       int32_t tempfd;
+       explicit ClientDetails(int32_t fd) {
+              this->ClientSocketFileDiscription = fd;
+              this->serverSocketFileDiscription = -1;
+              this->NumberOfClient = 0;
+              this->tempfd = -1;
+              this->finalExit = true;
+              this->broadCastingPrevMsgToClient = false;
+              this->ChatMsgStatus = false;
+              memset(this->whichClient, -1, 30);
+              memset(this->MsgResv, '\0', 1023);
+              memset(this->msgSend, '\0', 1023);
+       }
 };
 typedef struct ClientDetails *CliDetails;
 
-void msgSend           (CliDetails);
-void msgrecv           (CliDetails);
-void savedmsg          (CliDetails);
-void messageBroadcast  (CliDetails);
-int *acceptFxn (int *, struct sockaddr*, int *);
+/* structure for node*/
+
+struct subNode {
+       char *answer;
+       subNode *down;
+       explicit subNode(char ans[SIZE]) {
+              this->answer = (char *) calloc(SIZE, sizeof(char));
+              strcpy(this->answer, ans);
+              this->down = nullptr;
+              //      memset(this->answer, '\0', SIZE);
+       }
+};
+
+struct node {
+       int32_t setNo;
+       node *next;
+       subNode *down;
+       explicit node(int32_t set) {
+              this->setNo = set;
+              this->next = nullptr;
+              this->down = nullptr;
+       }
+} *head = nullptr, *tail = nullptr;
+
+struct Chat {
+       char *msg;
+       Chat *next;
+       explicit Chat(char msg[SIZE]) {
+              this->msg = (char *) calloc(SIZE, sizeof(char));
+              strcpy(this->msg, msg);
+              this->next = nullptr;
+       }
+} *chatHead = nullptr, *chatTail = nullptr;
+//____-------_______------__------__----_--------_--_-----_______------__---_---_----_----_-_-_----_-_-_--//
+
+/*-----------------------function prototype Declaration-------------------------------*/
+// chat save function
+
+// for saving all kind of message recv from chat and client
+void saveChat(char msg[SIZE]);
+
+/*
+ * Purpose:
+ * *******Prints chat messages to the console and handles broadcasting to newly connected clients.
+ * Parameters:
+ * *******CliDetails client: A structure containing client-related information, including:
+ * ------------broadCastingPrevMsgToClient: Flag indicating whether to broadcast previous messages to a new client.
+ * ------------NumberOfClient: Number of connected clients.
+ * ------------whichClient: Array storing file descriptors for connected clients.
+ * Functionality:
+ * ****** Iterates through the chat history:
+ * ------------Uses a temp pointer to traverse a linked list of Chat structures, presumably containing chat messages.
+ * ****** Handles broadcasting for new clients:
+ * ------------If client->broadCastingPrevMsgToClient is true:
+ * ------------------- Pauses briefly using std::this_thread::sleep_for.
+ * ------------------- Sends the current message to the most recently connected client using the send function.
+ * ------------------- Moves to the next message in the list.
+ * ****** Prints chat messages:
+ * ------------If the current message is a chat message (identified by "1c" at the beginning):
+ * --------------------Prints the message to the console starting from the third character (skipping the identifier).
+ * ****** Advances to the next message:
+ * ------------Moves the temp pointer to continue iterating through the chat history.
+ *
+ */
+void printChat(CliDetails);
 
 
-int main(void){
+/***=============== save option ====================***/
+/*
+ * this fxn present menu of option to user and process based on the selected optins. it operates in a loop ,
+ * it operate on loop allowing user to intrect with different feature of chat applicaton. the option include like chatting etc
+ * PARAMETER
+ * 'client' type( cliDetaild ) a pointer to structure that hold various detail about the client , including socket information
+ * memory - related information;
+ *
+ * !MENU PRESENTED
+ * displays a menu with numberes options to the user to choose from,
+ * option including
+ *   .1: Enter chat mode
+ *   2: Show sets/answers.
+ *   3: Create a new set.
+ *   4: Put an answer in a set.
+ *   5: Exit the application.
+ *Option Processing:
+ *Uses a switch-case statement to execute different actions based on the user's choice.
+ * Case 1: Enters chat mode, prints the chat history, and allows the user to send messages.
+ * Case 2: Shows answers and sets based on user input.
+ * Case 3: Creates a new set.
+ * Case 4: Puts an answer in a set.
+ * Case 5: Shuts down the application, closing sockets, freeing memory, and send exit message to all
+ * the connected client for clearing the terminal;
+ *The function operates in an infinite loop (while(true)) until the user chooses to exit the application (Case 5).
+ */
 
-     int serverSocketFileDiscription= socket(AF_INET, SOCK_STREAM, 0);
-     if (serverSocketFileDiscription<0){
-          perror("socket creation error\n");
-          exit(1);
-     }
+void option(CliDetails);
 
-     struct  sockaddr_in address;
-     address.sin_family=AF_INET;
-     address.sin_port= htons(port);
-     inet_pton(AF_INET,"172.16.56.159",&address.sin_addr.s_addr);
-     int BindResult= bind(serverSocketFileDiscription, (struct sockaddr*) &address,sizeof address);
+/*The msgSend function is responsible for handling user input and broadcasting messages
+ * Purpose:
+ * Facilitates message sending to connected clients within a chat application.
+ * Handles chat functionality, exit commands, and message broadcasting.
+ *
+ * Parameters:
+ *      CliDetails client: A structure containing client-related information, including:
+ *      ChatMsgStatus: Indicates whether chat mode is active.
+ *      finalExit: Flag for server shutdown.
+ *      serverSocketFileDiscription: File descriptor for the server socket.
+ *      NumberOfClient: Number of connected clients.
+ *      whichClient: Array storing file descriptors for connected clients.
+ *      msgSend: Buffer for storing the outgoing message.
+ *
+ * Functionality:
+ * Enters a loop while chat mode is active:
+ *      *Reads a message from standard input using fgets.
+ *      *Processes the message based on its content:
+ *         *"-1": Clears the screen and returns.
+ *         *"exit" and finalExit is true:
+ *                *Initiates server shutdown:
+ *                *Closes the server socket and connected client sockets.
+ *                *Clears the screen and exits the program.
+ *         *Other messages:
+ *            *Constructs a message to send to clients:
+ *                 *Prefixes the message with "1c" (chat identifier).
+ *                 *Copies the message to the toSend buffer.
+ *                 *Saves the chat using the saveChat function (presumably for logging).
+ *                 *Sends the message to all connected clients using the send function.
+ *                 *Clears the toSend buffer for the next message.
+ */
+void msgSend(CliDetails);
+/*Purpose:
+ *      Continuously receives messages from connected clients.
+ *```` Handles chat messages, set creation, answer addition, client disconnections, and message broadcasting.
+*Parameters:
+*     * CliDetails client: A structure containing client-related information, including:
+*            * NumberOfClient: Number of connected clients.
+*            * whichClient: Array storing file descriptors for connected clients.
+*            * MsgResv: Buffer for storing received messages.
+*            * tempfd: Temporary file descriptor for broadcasting.
+*            * ChatMsgStatus: Indicates whether chat mode is active.
+*Functionality:
+*
+*Enters an infinite loop:
+*      Initializes a file descriptor set for monitoring client sockets.
+*      Uses select to wait for activity on any of the client sockets.
+*      If select fails, exits with an error.
+*Iterates through connected clients:
+*     +- If a client socket has activity:
+*             +-Reads data from the socket using read.
+*             +-If the client has disconnected:
+*                   +- Prints a disconnection message.
+*                   +- Closes the socket and marks it as disconnected.
+*            +- If a message has been received:
+*                    +-Saves the chat using the saveChat function.
+*                   +- Stores the message and file descriptor for broadcasting.
+*                    +- Broadcasts the message to all other clients using the messageBroadcast function (presumably defined elsewhere).
+*                    +- Processes the message based on its content:
+*                    +-Chat message ("1c"):
+*                           +-Prints the message to the console if chat mode is active.
+*                    +-Set creation message ("1a"):
+*                         +-  Prints a notification message.
+*                          +- Calls the creatSet function (presumably for set creation).
+*                  +-  Answer addition message ("1b"):
+*                          +-  Prints a notification message.
+*                           +- Extracts the answer text from the message.
+*                            +- Calls the createSubSet function (presumably for adding answers to a set).
 
-     //  BindResult?exit(2):printf("binding sucessful\n");
-     if (BindResult==0){
-          printf("binding successful\n");
-     }else{
-          perror("biding unsuccessful\n");
-          exit(2);
-     }
+ *
+ */
+void msgResv(CliDetails);
+/*
+ * Purpose:
+ *         Distributes a received message to all connected clients except the sender.
+ *  Parameters:
+ *      -CliDetails client: A structure containing client-related information, including:
+ *           *NumberOfClient: Number of connected clients.
+ *           *whichClient: Array storing file descriptors for connected clients.
+ *           *MsgResv: Buffer containing the message to be broadcasted.
+ *           *tempfd: Temporary file descriptor representing the sender's socket.
+ * Functionality:
+ *        * Iterates through connected clients:
+ *        * For each client file descriptor:
+ *              * Checks if the client is not the sender and is still connected.
+ *              * If so, sends the message to the client using the send function.
+ *        * Clears the message buffer:
+ *              * Resets the MsgResv buffer to empty for the next message.
+ */
+void messageBroadcast(CliDetails);
 
-     int listenRusult = listen(serverSocketFileDiscription, backlog);
 
-     if (listenRusult==0){
-          printf("listning successful\n");
-     }else{
-          perror("listening unsuccessful\n");
-          exit(3);
-     }
 
-     CliDetails clientDetails = new ClientDetails(0);
+void case3_CreateSet(CliDetails);
+void case2_ShowAnswer(CliDetails);
+void case5_CreateSubset(CliDetails);
 
-     while (true) {
-          socklen_t addressLen= sizeof address;
-          clientDetails->ClientSocketFileDiscription= accept(serverSocketFileDiscription,(struct sockaddr*)&address, &addressLen);
-          clientDetails->whichClient[clientDetails->NumberOfClient++]=clientDetails->ClientSocketFileDiscription;
+//saved related function
+void creatSet(int32_t setNumber);
+void printSubSet(int32_t setNumber);
+bool printSuperSet(bool check, int32_t setNumber);
+void createSubSet(int32_t setNumber, char data[SIZE]);
+/*==========+++++++++++++==========+++++++++++========++++++++++++++++++============*/
 
-          printf("New client joined the server\n");
+/*=======================+++++====-- Main fxn-- =+++===+++++++++++=====+++++++====++=+======*/
+int32_t main() {
+       system("clear");
+       int32_t serverSocketFileDiscription = socket(AF_INET, SOCK_STREAM, 0);
+       if (serverSocketFileDiscription < 0) {
+              perror("socket creation error\n");
+              exit(1);
+       }
 
-          if (clientDetails->ClientSocketFileDiscription>0) {
-               std::thread  SendThread(msgSend , clientDetails);
-               std::thread  resvThread(msgrecv , clientDetails);
-               SendThread.detach();
-               resvThread.detach();
-          }else{
-               perror("error in accepting incoming connection\n");
-               errno;
-               break;
-          }
-     }
+       struct sockaddr_in address {};
+       address.sin_family = AF_INET;
+       address.sin_port = htons(port);
+       inet_pton(AF_INET, "127.0.0.1", &address.sin_addr.s_addr);
+       int32_t BindResult = bind(serverSocketFileDiscription, (struct sockaddr *) &address, sizeof address);
 
-     /* clean up */
+       //  BindResult?exit(2):printf("binding successful\n");
+       if (BindResult == 0) {
+              printf("binding successful\n");
+       } else {
+              perror("biding unsuccessful\n");
+              exit(2);
+       }
 
-     close(serverSocketFileDiscription);
-     shutdown(serverSocketFileDiscription, SHUT_RDWR);
-     close(clientDetails->ClientSocketFileDiscription);
-     shutdown(clientDetails->ClientSocketFileDiscription, SHUT_RDWR);
-     return 0;
+       uint64_t listenRusult = listen(serverSocketFileDiscription, backlog);
+       if (listenRusult == 0) {
+              printf("listening successful\n");
+       } else {
+              perror("listening unsuccessful\n");
+              exit(3);
+       }
+
+       auto clientDetails = new ClientDetails(0);
+
+       std::thread options(option, clientDetails);
+       options.detach();
+
+       while (true) {
+              socklen_t addressLen = sizeof address;
+              clientDetails->ClientSocketFileDiscription =
+                  accept(serverSocketFileDiscription, (struct sockaddr *) &address, &addressLen);
+              clientDetails->whichClient[clientDetails->NumberOfClient++] = clientDetails->ClientSocketFileDiscription;
+              std::cout << GREEN << "New client joined the server\n"
+                        << RESET;
+
+              if (clientDetails->ClientSocketFileDiscription > 0) {
+                     std::thread SendThread(msgSend, clientDetails);
+                     std::thread resvThread(msgResv, clientDetails);
+
+                     // for broadcasting previous message to newly connected client
+
+                     SendThread.detach();
+                     resvThread.detach();
+                     clientDetails->broadCastingPrevMsgToClient = true;
+                     std::this_thread::sleep_for(std::chrono::seconds(1));
+                     printChat(clientDetails);
+                     clientDetails->broadCastingPrevMsgToClient = false;
+
+              } else {
+                     perror("error in accepting incoming connection\n");
+                     errno;
+                     break;
+              }
+       }
+
+       /* clean up */
+
+       close(serverSocketFileDiscription);
+       shutdown(serverSocketFileDiscription, SHUT_RDWR);
+       for (int32_t i = 0; i < clientDetails->NumberOfClient; ++i) {
+              close(clientDetails->whichClient[i]);
+              shutdown(clientDetails->whichClient[i], SHUT_RDWR);
+       }
+
+       system("clear");
+       system("exit");
+       return 0;
+}
+/*=====++++++++++++++++++++++==========+++++=======+==+===++=+=+======+======+=+====+====*/
+
+void msgSend(CliDetails client) {
+       char msg[1024];
+       while (client->ChatMsgStatus) {
+              fgets(msg, 1024, stdin);
+              if (strcmp(msg, "-1\n") == 0) {
+                     system("clear");
+                     return;
+              }
+              int32_t x = strcmp(msg, "exit\n");
+              if (x == 0 and client->finalExit) {
+                     printf("2. shutting down....\n");
+                     close(client->serverSocketFileDiscription);
+                     shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
+                     for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+                            close(client->whichClient[i]);
+                            shutdown(client->whichClient[i], SHUT_RDWR);
+                     }
+                     system("clear");
+                     system("exit");
+                     pid_t val = getpid();
+                     std::cout << val << "\n";
+                     std::exit(0);
+              }
+              //////------------------------------//////
+              // else none of above then well send it to all the connected client;
+
+              if (strlen(msg) > 1) {
+                     char toSend[SIZE];
+                     toSend[0] = '1';
+                     toSend[1] = 'c';          // identifer of chat
+                     for (int32_t len = 0; len < strlen(msg) && len < SIZE - 2; ++len) {
+                            toSend[2 + len] = msg[len];          // concatinate the message to toSend buffer
+                     }
+                     strcpy(client->msgSend, toSend);          //
+                     saveChat(toSend);
+                     for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+                            send(client->whichClient[i], toSend, strlen(toSend), 0);
+                     }
+                     memset(toSend, '\0', strlen(toSend));
+              }
+       }
 }
 
-void msgSend(CliDetails client){
-     char name[1024]="";
-     char msg[1024];
-     uint64_t namelen= strlen(name);
+// this fxn will manage the server and the reside message
+// as well ad this will also look for the client connection state
+// if client disconnect the serve then  i'll remove the client  FD
+// then i'll remove the name from  the list of connected fd
+// if not done it message broadcast fxn will assess the already
+// close fd this will crash the program
 
-     while(true) {
-          fgets(msg, 1024, stdin);
-          int x=strcmp(msg, "exit\n");
-          if (x==0) {
-//               printf("2. shutting down....\n");
-//               close(client->serverSocketFileDiscription);
-//               shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
-//               for (int i=0; i<client->NumberOfClient; ++i) {
-//                    close(client->whichClient[i]);
-//                    shutdown(client->whichClient[i], SHUT_RDWR);
-//               }
-               exit(EXIT_SUCCESS);
-          }
-          if (strlen(msg)>1) {
-               strcat(name, " ");
-               strcat(name, msg );
-               strcpy(client->msgSend, name);
-               for (int i=0; i<client->NumberOfClient; ++i)
-                    send(client->whichClient[i], name, strlen(name), 0);
-          }
-          for (int i=0;msg[i]; i++) {
-               name[i+namelen]='\0';
-          }
-     }
+void msgResv(CliDetails client) {
+       char revMsgBuffer[1024];
+       memset(revMsgBuffer, '\0', 1024);
+       fd_set readfd;
+       int32_t maxfd = -1;
+       while (true) {
+              __DARWIN_FD_ZERO(&readfd);
+              for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+                     __DARWIN_FD_SET(client->whichClient[i], &readfd);
+                     if (client->whichClient[i] > maxfd) {
+                            maxfd = client->whichClient[i];
+                     }
+              }
+              int32_t ready = select(maxfd + 1, &readfd, nullptr, nullptr, nullptr);
+              if (ready == -1) {
+                     perror("select error\n");
+                     exit(EXIT_FAILURE);
+              }
+
+              for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+                     if (__DARWIN_FD_ISSET(client->whichClient[i], &readfd)) {
+                            char buffer[1024];
+                            int64_t byteResv = read(client->whichClient[i], buffer, 1024);
+                            if (byteResv <= 0) {
+                                   std::cout << RED << "client " << client->whichClient[i] << " disconnected\n"
+                                             << RESET;
+
+                                   /// shuting down the cline fd and read write
+                                   close(client->whichClient[i]);
+                                   shutdown(client->whichClient[i], SHUT_RDWR);
+                                   /// marking it to -1 for not sending broadcast messaage to already disconnected client
+                                   client->whichClient[i] = -1;
+                                   continue;
+                            } else if (byteResv > 1) {
+                                   saveChat(buffer);
+                                   client->tempfd = client->whichClient[i];
+                                   strcpy(client->MsgResv, buffer);
+                                   messageBroadcast(client);
+
+                                   // for receiving  the chat message form connected client
+                                   if (buffer[1] == 'c') {
+                                          if (client->ChatMsgStatus) {
+                                                 for (int32_t j = 2; buffer[j]; ++j) {
+                                                        std::cout << buffer[j];
+                                                 }
+                                          }
+                                          memset(buffer, '\0', 1024);
+                                          continue;
+                                   }
+
+                                   // for creating the set on server
+                                   if (buffer[1] == 'a') {
+                                          // create set;
+                                          std::cout<<RED<<"ATTENTION! "<<RESET<<"some one Added Set : " << buffer[0] - 48 << "\n";
+                                          // as it recive char 1 so we have to convert it intiger one by subtracting the 48
+                                          creatSet(buffer[0] - 48);
+                                          memset(buffer, '\0', 1024);
+                                          continue;
+                                   }
+
+                                   // if index encounter b then some  client have sended message to crate sub set;
+                                   if (buffer[1] == 'b') {
+                                          char arr[SIZE];
+                                          for (int32_t j = 0; buffer[j]; ++j) {
+                                                 arr[j] = buffer[j + 2];
+                                          }
+                                          std::cout<<RED<<"ATTENTION! "<<RESET<<"New Answer added in set : "<<buffer[0]-48<<"\n";
+//                                          printf("attention !answer in subset %d\n", buffer[0] - 48);
+                                          createSubSet(buffer[0] - 48, arr);
+                                          memset(buffer, '\0', SIZE);
+                                          continue;
+                                   }
+
+                                   memset(buffer, '\0', 1024);
+                            }
+                     }
+              }
+       }
+}
+
+/**
+ * @brief Broadcasts a message to all connected clients except the sender.
+ *
+ * This function sends a received message (`client->MsgResv`) to all connected clients
+ * except the sender identified by `client->tempfd`. It iterates through the list of
+ * client socket file descriptors and sends the message using the `send` function.
+ * After broadcasting, it clears the message buffer (`client->MsgResv`) to prepare for
+ * the next message.
+ *
+ * @param client A pointer to the structure holding client details.
+ */
+
+void messageBroadcast(CliDetails client) {
+       for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+              if (client->whichClient[i] != client->tempfd and client->whichClient[i] != -1)
+                     send(client->whichClient[i], client->MsgResv, strlen(client->MsgResv), 0);
+       }
+       memset(client->MsgResv, '\0', 1024);
+}
+
+/***=============== save option ====================***/
+
+void option(CliDetails client) {
+       while (true) {
+              int32_t input;
+              std::cout << "\n----------Select Option---------\n";
+              std::cout << "1. CHAT\n";
+              std::cout << "2. Show set/Answer\n";
+              std::cout << "3. Create set\n";
+              std::cout << "4. Put answer in set\n";
+              std::cout << "5.EXIT \n";
+              std::cin >> input;
+              if (std::cin.fail()) {
+                     std::cin.clear();
+                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                     system("clear");
+                     std::cout << RED << "Invalid input. Please enter an integer: " << RESET;
+                     continue;          // Repeat the loop for a new input attempt
+              }
+              switch (input) {
+                     case 1:
+                            client->ChatMsgStatus = true;
+                            system("clear");
+                            std::cout << "entering into chat mode\n";
+                            printChat(client);
+                            msgSend(client);
+                            client->ChatMsgStatus = false;
+                            system("clear");
+                            break;
+                     case 2:
+                            client->ChatMsgStatus = false;
+                            case2_ShowAnswer(client);
+                            break;
+                     case 3:
+                            client->ChatMsgStatus = false;
+                            case3_CreateSet(client);
+                            break;
+                     case 4:
+                            client->ChatMsgStatus = false;
+                            case5_CreateSubset(client);
+                            break;
+                     case 5:
+                            system("clear");
+                            printf("4. shutting down server and cient \n");
+                            char exitNote[5];
+                            memset(exitNote, '\0', sizeof exitNote);
+                            exitNote[0]='1';
+                            exitNote[1]='e';
+                            exitNote[2]='\0';
+                            for (int i = 0; i < client->NumberOfClient; ++i) {
+                                   if (client->whichClient[i]!=-1){
+                                          send(client->whichClient[i], exitNote, strlen(exitNote), 0);
+                                   }
+
+                            }
+                            close(client->serverSocketFileDiscription);
+                            shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
+                            for (int i = 0; i < client->NumberOfClient; ++i) {
+                                   close(client->whichClient[i]);
+                                   shutdown(client->whichClient[i], SHUT_RDWR);
+                            }
+                            free(chatHead);   // there are  much more memory alloted from heap but not freeing
+                            free(chatTail);   // there are  much more memory alloted from heap but not freeing
+                            free(head);       // there are  much more memory alloted from heap but not freeing
+                            free(tail);       // there are  much more memory alloted from heap but not freeing
+                            exit(EXIT_SUCCESS);
+                     default:
+                            system("clear");
+                            std::cout << RED << "INVALID INPUT\n"
+                                      << RESET;
+                            continue;
+              }
+       }
+}
+/* memeory management after usning calloc and malloc fxn for array
+
+ function missing // coz it have lot of mess to do
+
+*/
+/*** =============================================== ***/
+// case 1 chat
+void saveChat(char msg[SIZE]) {
+       Chat *newChat = new Chat(msg);
+       if (chatHead == nullptr) {
+              chatHead = newChat;
+              chatTail = newChat;
+       } else {
+              chatTail->next = newChat;
+              chatTail = newChat;
+       }
+}
+void printChat(CliDetails client) {
+       Chat *temp = chatHead;
+
+       while (temp) {
+              if (client->broadCastingPrevMsgToClient) {
+                     std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                     send(client->whichClient[client->NumberOfClient-1], temp->msg, strlen(temp->msg), 0);
+                     temp = temp->next;
+                     continue;
+              }
+              if (temp->msg[1] == 'c') {
+                     for (int i = 2; temp->msg[i]; ++i) {
+                            std::cout << temp->msg[i];
+                     }
+              }
+              temp = temp->next;
+       }
+}
+
+// case 2 show set and answer
+
+void creatSet(int setNumber) {
+       node *temp = new node(setNumber);
+       if (!head) {
+              head = tail = temp;
+       } else {
+              tail->next = temp;
+              tail = temp;
+       }
+}
+
+void createSubSet(int setNumber, char data[SIZE]) {
+       node *horizontal = head;
+
+       while (horizontal and (horizontal->setNo != setNumber)) {
+              horizontal = horizontal->next;
+       }          // horinzontal triversal to that node
+
+       auto *vertical = new subNode(data);
+       if (horizontal->down == nullptr) {          // pushing element to first;
+              horizontal->down = vertical;
+
+       } else {
+              vertical->down = horizontal->down;
+              horizontal->down = vertical;
+       }
+}
+
+// case 2
+void printSubSet(int setNumber) {
+       node *temp = head;
+       while (temp and temp->setNo != setNumber) {
+              temp = temp->next;
+       }
+       system("clear");
+       std::cout << "---------------printing setNumber-----------------  " << setNumber << " :- \n";
+       subNode *run = temp->down;
+       int x = 0;
+       while (run) {
+              x++;
+              std::cout << run->answer;
+              run = run->down;
+       }
+}
+
+bool printSuperSet(bool check, int setnumber) {
+       node *temp = head;
+       if (!check) {
+              std::cout << "----------------printing set-----------------\n";
+       }
+       while (temp) {
+              if (check) {
+                     if (temp->setNo == setnumber) {
+                            return true;
+                     }
+              } else {
+
+                     std::cout << "Set Number: " << temp->setNo << "\n";
+              }
+              temp = temp->next;
+       }
+       if (!check) {
+              std::cout << "---------------------------------------------\n";
+       }
+
+       return false;
+}
+/* ----- ================================------*/
+
+/// case 3
+
+void case3_CreateSet(CliDetails client) {
+       system("clear");
+       printSuperSet(false, 0);
+       int setNumber;
+       while (true) {
+              std::cout << "enter set number: or -1 for exit: ";
+              std::cin >> setNumber;
+              if (std::cin.fail()) {
+                     std::cin.clear();
+                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                     system("clear");
+                     std::cout << RED << "Invalid input. Please enter an integer: \n"
+                               << RESET;
+                     return;
+              }
+              if (setNumber == -1) {
+                     return;
+              }
+              if (printSuperSet(true, setNumber)) {
+                     std::cout << RED << "Set Already there\n"
+                               << RESET;
+                     continue;
+              } else {
+
+                     creatSet(setNumber);
+                     char arr[20];
+                     memset(arr, '\0', sizeof arr);
+                     arr[0] = (char) (48 + setNumber);
+                     arr[1] = 'a';
+                     arr[2] = '\0';
+                     saveChat(arr);
+                     for (int i = 0; i < client->NumberOfClient; ++i) {
+                            send(client->whichClient[i], arr, strlen(arr), 0);
+                     }
+              }
+       }
+}
+
+void case5_CreateSubset(CliDetails client) {
+       system("clear");
+       printSuperSet(false, 0);
+       std::cout << "which set: or -1 for exit ";
+       int setNumbet;
+       std::cin >> setNumbet;
+       if (std::cin.fail()) {
+              std::cin.clear();
+              std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+              std::cout << RED << "invalid input. plz enter a integer \n"
+                        << RESET;
+              return;
+       }
+       if (setNumbet == -1) {
+              return;
+       }
+       if (printSuperSet(true, setNumbet)) {
+              char Data[SIZE];
+              char line[250];
+              uint64_t i = 0;
+              std::cout << BLUE << "Copy Paste you Answer ' " << setNumbet << " ' -1 for exit \n"
+                        << RESET;
+              while (fgets(line, 1024, stdin)) {
+                     if (strcmp(line, "-1\n") == 0) {
+                            break;
+                     } else {
+                            strcpy(Data + i, line);
+                            i += strlen(line);
+                            if (i == SIZE) {
+                                   std::cout << RED << "size limit reached\n"
+                                             << RESET;
+                                   break;
+                            }
+                     }
+              }
+              createSubSet(setNumbet, Data);
+              char mesg[SIZE];
+              mesg[0] = (char) (48 + setNumbet);
+              mesg[1] = 'b';
+              for (int32_t j = 0; Data[j] and j < SIZE - 2; ++j) {
+                     mesg[j + 2] = Data[j];
+              }
+              saveChat(mesg);
+              for (int j = 0; j < client->NumberOfClient; ++j) {
+                     if (client->whichClient[j] != -1) {
+                            send(client->whichClient[j], mesg, strlen(mesg), 0);
+                     }
+              }
+              memset(Data, '\0', SIZE);                  // o(n)
+              memset(mesg, '\0', strlen(mesg));          // O(n)
+       }
 }
 
 
 
-void msgrecv(CliDetails client){
-     char revMsgBuffer[1024];
-     memset(revMsgBuffer, '\0', 1024);
 
-     fd_set readfd;
-     int maxfd=-1;
-     while (true) {
-          __DARWIN_FD_ZERO(&readfd);
-          for (int i=0; i<client->NumberOfClient; ++i) {
-               __DARWIN_FD_SET(client->whichClient[i], &readfd);
-               if (client->whichClient[i]>maxfd) {
-                    maxfd=client->whichClient[i];
-               }
-          }
-          int ready= select(maxfd+1, &readfd, nullptr, nullptr, nullptr);
-          if (ready==-1) {
-               perror("select error\n");
-               exit(EXIT_FAILURE);
-          }
-          for (int i=0; i<client->NumberOfClient; ++i) {
-               if (__DARWIN_FD_ISSET(client->whichClient[i], &readfd)) {
-                    char buffer[1024];
-                    int64_t byteResv=read(client->whichClient[i], buffer, 1024);
-                    if (byteResv<0) {
-                         printf("1. shutting down....\n");
-                         close(client->serverSocketFileDiscription);
-                         shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
-                         for (int i=0; i<client->NumberOfClient; ++i) {
-                              close(client->whichClient[i]);
-                              shutdown(client->whichClient[i], SHUT_RDWR);
-                         }
-                         exit(EXIT_SUCCESS);
-                    }else if (byteResv>1){
-                         client->tempfd=client->whichClient[i];
-                         printf("%s\n", buffer);
-                         strcpy(client->MsgResv, buffer);
-                         messageBroadcast(client);
-                         memset(buffer, '\0', 1024);
-                    }
-               }
-          }
-     }
-}
-void messageBroadcast(CliDetails client){
-     for (int i=0; i<client->NumberOfClient; ++i) {
-          if (client->whichClient[i]!=client->tempfd)
-               send(client->whichClient[i], client->MsgResv, strlen(client->MsgResv), 0);
-     }
-     memset(client->MsgResv, '\0', 1024);
-}
-
-int * acceptFxn( int * serverFileDiscription , struct sockaddr_in address){
-     int clientServerFileDiscription;
-     socklen_t addressLen= sizeof(address);
-     while (true) {
-          clientServerFileDiscription=accept(*serverFileDiscription, (struct sockaddr *)&address, &addressLen);
-          std::this_thread::sleep_for(std::chrono::milliseconds(500));
-     }
+// show answer to user
+void case2_ShowAnswer(CliDetails client) {
+       system("clear");
+       int setNumber;
+       printSuperSet(false, 0);          // call set print function
+       std::cout << "Enter set number: or -1 for back ";
+       std::cin >> setNumber;
+       if (std::cin.fail()) {
+              std::cin.clear();
+              std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+              std::cout << "Invalid input. Please enter an integer: ";
+              return;
+       }
+       if (setNumber == -1) {
+              return;
+       }
+       if (!printSuperSet(true, setNumber)) {
+              std::cout << RED << "Set not exist\n"
+                        << RESET;
+              std::cout << "do you want to create set? (y/n) : ";
+              char ch;
+              std::cin >> ch;
+              if (std::cin.fail()) {
+                     std::cin.clear();
+                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                     std::cout << RED << "Invalid input. Please enter an character: " << RESET;
+                     return;
+              }
+              if (ch == 'y' or ch == 'Y') {
+                     char toSend[20];
+                     memset(toSend, '\0', sizeof toSend);
+                     toSend[1] = 'a';
+                     toSend[0] = (char) (48 + setNumber);
+                     toSend[2] = '\0';
+                     saveChat(toSend);
+                     for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+                            if (client->whichClient[i] != -1) {
+                                   send(client->whichClient[i], toSend, strlen(toSend), 0);
+                            }
+                     }
+                     creatSet(setNumber);
+              }
+              if (ch == 'n' or ch == 'N')
+                     return;
+       } else {
+              printSubSet(setNumber);
+       }
 }
