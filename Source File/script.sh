@@ -1,4 +1,3 @@
-# shellcheck disable=SC1035
 !#bin/zsh
 
 while true

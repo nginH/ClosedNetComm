@@ -52,9 +52,9 @@ SOFTWARE.
 #define __DARWIN_FD_ISSET(fd, p) FD_ISSET(fd, p)
 #endif
 
-uint32_t port = 6969;
-uint32_t backlog = 10;
-uint32_t SIZE = 1024;
+const uint32_t port = 6969;
+const uint32_t backlog = 10;
+const uint32_t SIZE = 1024;
 
 #define RESET "\033[0m"
 #define RED "\033[31m"
@@ -69,7 +69,7 @@ uint32_t SIZE = 1024;
 
 // client details structure
 
-////////////////--------- Container Construction----------///////////////////
+/*******--------- Container Construction----------****/
 //Encapsulates information about a connected client within a server application.
 /*
  * Members:
@@ -124,7 +124,7 @@ struct subNode {
 };
 
 struct node {
-       int32_t setNo;
+       int8_t setNo;
        node *next;
        subNode *down;
        explicit node(int32_t set) {
@@ -176,7 +176,6 @@ void saveChat(char msg[SIZE]);
  */
 void printChat(CliDetails);
 
-
 /***=============== save option ====================***/
 /*
  * this fxn present menu of option to user and process based on the selected optins. it operates in a loop ,
@@ -188,7 +187,7 @@ void printChat(CliDetails);
  * !MENU PRESENTED
  * displays a menu with numberes options to the user to choose from,
  * option including
- *   .1: Enter chat mode
+ *   1: Enter chat mode
  *   2: Show sets/answers.
  *   3: Create a new set.
  *   4: Put an answer in a set.
@@ -238,6 +237,7 @@ void option(CliDetails);
  *                 *Clears the toSend buffer for the next message.
  */
 void msgSend(CliDetails);
+
 /*Purpose:
  *      Continuously receives messages from connected clients.
  *```` Handles chat messages, set creation, answer addition, client disconnections, and message broadcasting.
@@ -278,6 +278,7 @@ void msgSend(CliDetails);
  *
  */
 void msgResv(CliDetails);
+
 /*
  * Purpose:
  *         Distributes a received message to all connected clients except the sender.
@@ -297,17 +298,203 @@ void msgResv(CliDetails);
  */
 void messageBroadcast(CliDetails);
 
-
-
+/*
+ * Purpose:
+ *     Guides a user through creating a new set with a specific set number within a larger system of sets.
+ *     Manages communication with other connected clients regarding set creation.
+ *
+ *  1. Steps:
+ *     Clears the screen and displays existing sets:
+ *         Calls system("clear") to clear the terminal.
+ *         Calls printSuperSet(false, 0) to display a list of existing sets.
+ *  2. Prompts the user for a set number:
+ *         * Continuously prompts the user to enter a set number or -1 to exit.
+ *         * Validates input to ensure it's an integer within the allowed range (1 to 9).
+ *  3. Creates the set if valid and not already existing:
+ *         * If the entered set number is valid and not already in use:
+ *               *Calls creatSet(setNumber) to create the new set.
+ *               *Constructs a message string arr with the set number and a flag (e.g., "1a").
+ *               *Calls saveChat(arr) to presumably save the chat history for the set.
+ *               *Iterates through connected clients and sends the message string to each using send.
+ * 4. Handles invalid input or existing set:
+ *         * If the input is invalid or the set already exists, displays appropriate error messages and prompts the user to try again.
+ *
+ *  5. Exits on request:
+ *         *If the user enters -1, the function returns without creating a set.
+ */
 void case3_CreateSet(CliDetails);
+
+/*
+ * Purpose:
+ *         * Guides a user through viewing answers within a specific set in a larger system of sets.
+ *         * Offers the option to create a set if it doesn't exist.
+ *         * Manages communication with other connected clients regarding set creation and answer viewing.
+ *  Steps:
+ *    1. Clears the screen and displays existing sets:
+ *         * Clears the terminal.
+ *         * Shows a list of existing sets using printSuperSet(false, 0).
+ *
+ *    2.Prompts the user for a set number:
+ *         * Asks the user to enter a set number to view or -1 to go back.
+ *         * Validates input to ensure it's an integer within the allowed range (0 to 9).
+ *
+ *    3.Handles non-existent set:
+ *        * If the set doesn't exist:
+ *             * Informs the user.
+ *             * Asks if they want to create the set.
+ *             * If yes:
+ *                   *Constructs a message string toSend with the set number and a flag (e.g., "1a").
+ *                   *Calls saveChat(toSend) to presumably save the chat history for the set.
+ *                   *Iterates through connected clients and sends the message string to each using send.
+ *                   *Calls creatSet(setNumber) to create the new set.
+ *
+ *    4. Displays answers if the set exists:
+ *           * If the set exists, calls printSubSet(setNumber) to display the answers within that set.
+ *
+ *    5. Exits on request:
+ *           * If the user enters -1 or chooses not to create a non-existent set, the function returns without displaying answers.
+ */
 void case2_ShowAnswer(CliDetails);
+
+/*
+ * Purpose:
+ *      * Guides a user through creating a new subset (answer) within an existing set.
+ *      * Manages communication with other connected clients regarding subset creation.
+ *
+ *  Steps:
+ *  1. Clears the screen and displays existing sets:
+ *        * Clears the terminal.
+ *        * Shows a list of existing sets using printSuperSet(false, 0).
+ *  2. Prompts the user for a set number:
+ *        * Asks the user to enter the set number where they want to create a subset or -1 to exit.
+ *        * Validates input to ensure it's an integer within the allowed range.
+ *
+ *  3. Handles non-existent set:
+ *       * If the entered set doesn't exist, returns without creating a subset.
+ *
+ *  4. Collects subset data:
+ *       * Prompts the user to copy and paste the answer content for the new subset.
+ *       * Reads the input line by line using fgets until the user enters "-1" or the maximum size is reached.
+ *       * Stores the collected data in the Data array.
+ *  5. Creates the subset:
+ *       *Calls createSubSet(setNumbet, Data) to create the new subset within the specified set, using the collected data.
+ *
+ *  6. Notifies other clients:
+ *       * zConstructs a message string mesg with the set number, a flag (e.g., "1b"), and the subset data.
+ *       * Calls saveChat(mesg) to presumably save the chat history for the set.
+ *       * Iterates through connected clients and sends the message string to each using send.
+ *  7. Clears memory:
+ *       * Zeroes out the Data and mesg arrays to clear any sensitive information.
+ */
 void case5_CreateSubset(CliDetails);
 
 //saved related function
+
+/*
+ *  Purpose:
+ *     * Creates a new node representing a set in a linked list structure.
+ *
+ *  Steps:
+ *     * Allocates memory for a new node:
+ *     * Creates a new node object using new node(setNumber), initializing it with the provided set number.
+ *
+ *  Handles an empty list:
+ *     * If the list is empty (meaning head is null):
+ *     * Assigns both head and tail to point to the newly created node, indicating it's the only node in the list.
+ *
+ *  Appends to an existing list:
+ *    * If the list already has nodes:
+ *    * Connects the existing tail node to the new node using tail->next = temp.
+ *    * Updates the tail pointer to point to the newly added node, making it the new tail.
+ */
 void creatSet(int32_t setNumber);
+
+/*
+ *   Purpose:
+ *       * Prints the answers (subsets) within a specific set in the linked list structure.
+ *   Steps:
+ *       * Finds the target set:
+ *            *Iterates through the linked list using the temp pointer.
+ *            *Continues until it finds the node with the matching setNo or reaches the end of the list.
+ *
+ *       * Clears the screen and prints a header:
+ *            * Clears the terminal using system("clear").
+ *            * Prints a header indicating the set number being printed.
+ *
+ *      *  Prints each answer within the set:
+ *            * Accesses the first subset (answer) within the found node using temp->down.
+ *            * Iterates through the linked list of subsets using the run pointer.
+ *            * For each subset, prints its answer content to the console.
+ *
+ */
 void printSubSet(int32_t setNumber);
+
+/*
+ *    Purpose:
+ *          Manages the printing of sets within the linked list structure, either for displaying all sets or checking for a specific set's existence.
+ *    Parameters:
+ *         * check (bool): Determines the function's behavior:
+ *                 false: Prints all sets in the list.
+ *                 true: Checks if a specific set exists and returns a boolean indicating its presence.
+ *         * setnumber (int): Used only when check is true, indicating the set number to search for.
+ *
+ * If the function reaches the end of the list without finding a match for setnumber (when check is true), returns false to indicate the set doesn't exist.
+ *
+ */
 bool printSuperSet(bool check, int32_t setNumber);
+
+/*
+ *   Purpose:
+ *       Creates a new subset (answer) within an existing set in the linked list structure.
+ *
+ *  Steps:
+ *      * Finds the target set:
+ *            * Iterates through the linked list horizontally using the horizontal pointer.
+ *            * Continues until it finds the node with the matching setNo or reaches the end of the list.
+ *      * Creates a new subset node:
+ *            *Allocates memory for a new subNode object using new subNode(data), initializing it with the provided data.
+ *  Appends the subset to the set:
+ *      * If the set doesn't have any subsets yet (meaning horizontal->down is null):
+ *            * Directly assigns the new subset node to the set's down pointer, making it the first subset.
+ *      * If the set already has subsets:
+ *            * Connects the new subset node to the existing first subset using vertical->down = horizontal->down.
+ *            * Updates the set's down pointer to point to the newly added subset, making it the new first subset.
+ */
+
 void createSubSet(int32_t setNumber, char data[SIZE]);
+
+/*
+ * Purpose:
+ *----   Deallocates a linked list of nodes and their associated sub-nodes, freeing up memory.
+ *
+ *  Steps:
+ *   1. Iterates through the main list:
+ *            Stores the next node in Setnext to maintain list traversal.
+ *            Begins iterating through the sub-nodes of the current main node.
+ *   2. Deletes sub-nodes:
+ *          *Iterates through the sub-nodes of the current main node:
+ *               *Stores the next sub-node in SubNodedown.
+ *               *Deletes the current sub-node using delete.
+ *               *Moves to the next sub-node.
+ *   3. Deletes the main node:
+ *            * After all sub-nodes are deleted, deletes the current main node using delete.
+ *   4. Moves to the next main node:
+ *            * Sets head to Setnext to continue iterating through the main list.
+ */
+void MemoryManagement();
+
+/*Purpose:
+*    * Deallocates a linked list of chat objects, freeing up memory.
+* Steps:
+*    * Iterates through the chat list:
+*         *Stores the next chat object in ChatNext to maintain list traversal.
+*    * Deletes the current chat object:
+*         *Deletes the current chat object using delete.
+*    * Moves to the next chat object:
+*         *Sets chatHead to ChatNext to continue iterating through the chat list.
+*/
+void ChatMemoryManagement();
+
 /*==========+++++++++++++==========+++++++++++========++++++++++++++++++============*/
 
 /*=======================+++++====-- Main fxn-- =+++===+++++++++++=====+++++++====++=+======*/
@@ -322,7 +509,7 @@ int32_t main() {
        struct sockaddr_in address {};
        address.sin_family = AF_INET;
        address.sin_port = htons(port);
-       inet_pton(AF_INET, "127.0.0.1", &address.sin_addr.s_addr);
+       inet_pton(AF_INET, "172.16.56.159", &address.sin_addr.s_addr);
        int32_t BindResult = bind(serverSocketFileDiscription, (struct sockaddr *) &address, sizeof address);
 
        //  BindResult?exit(2):printf("binding successful\n");
@@ -363,7 +550,6 @@ int32_t main() {
                      SendThread.detach();
                      resvThread.detach();
                      clientDetails->broadCastingPrevMsgToClient = true;
-                     std::this_thread::sleep_for(std::chrono::seconds(1));
                      printChat(clientDetails);
                      clientDetails->broadCastingPrevMsgToClient = false;
 
@@ -375,16 +561,21 @@ int32_t main() {
        }
 
        /* clean up */
-
-       close(serverSocketFileDiscription);
-       shutdown(serverSocketFileDiscription, SHUT_RDWR);
-       for (int32_t i = 0; i < clientDetails->NumberOfClient; ++i) {
-              close(clientDetails->whichClient[i]);
-              shutdown(clientDetails->whichClient[i], SHUT_RDWR);
+       if (clientDetails->finalExit) {
+              clientDetails->finalExit = false;
+              close(serverSocketFileDiscription);
+              shutdown(serverSocketFileDiscription, SHUT_RDWR);
+              for (int32_t i = 0; i < clientDetails->NumberOfClient; ++i) {
+                     close(clientDetails->whichClient[i]);
+                     shutdown(clientDetails->whichClient[i], SHUT_RDWR);
+              }
+              // MemoryManagement();
+              // ChatMemoryManagement();
+              clientDetails->finalExit = false;
        }
 
        system("clear");
-       system("exit");
+       //       system("exit");
        return 0;
 }
 /*=====++++++++++++++++++++++==========+++++=======+==+===++=+=+======+======+=+====+====*/
@@ -399,6 +590,7 @@ void msgSend(CliDetails client) {
               }
               int32_t x = strcmp(msg, "exit\n");
               if (x == 0 and client->finalExit) {
+                     client->finalExit = false;
                      printf("2. shutting down....\n");
                      close(client->serverSocketFileDiscription);
                      shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
@@ -444,7 +636,7 @@ void msgResv(CliDetails client) {
        memset(revMsgBuffer, '\0', 1024);
        fd_set readfd;
        int32_t maxfd = -1;
-       while (true) {
+       while (client->finalExit) {
               __DARWIN_FD_ZERO(&readfd);
               for (int32_t i = 0; i < client->NumberOfClient; ++i) {
                      __DARWIN_FD_SET(client->whichClient[i], &readfd);
@@ -455,17 +647,18 @@ void msgResv(CliDetails client) {
               int32_t ready = select(maxfd + 1, &readfd, nullptr, nullptr, nullptr);
               if (ready == -1) {
                      perror("select error\n");
-                     exit(EXIT_FAILURE);
+                     client->finalExit = false;
+                     exit(EXIT_SUCCESS);
               }
 
-              for (int32_t i = 0; i < client->NumberOfClient; ++i) {
+              for (int32_t i = 0; i < client->NumberOfClient and client->finalExit; ++i) {
                      if (__DARWIN_FD_ISSET(client->whichClient[i], &readfd)) {
                             char buffer[1024];
                             int64_t byteResv = read(client->whichClient[i], buffer, 1024);
                             if (byteResv <= 0) {
                                    std::cout << RED << "client " << client->whichClient[i] << " disconnected\n"
                                              << RESET;
-
+                                   client->finalExit = false;
                                    /// shuting down the cline fd and read write
                                    close(client->whichClient[i]);
                                    shutdown(client->whichClient[i], SHUT_RDWR);
@@ -492,7 +685,7 @@ void msgResv(CliDetails client) {
                                    // for creating the set on server
                                    if (buffer[1] == 'a') {
                                           // create set;
-                                          std::cout<<RED<<"ATTENTION! "<<RESET<<"some one Added Set : " << buffer[0] - 48 << "\n";
+                                          std::cout << RED << "\nATTENTION! " << RESET << "some one Added Set : " << buffer[0] - 48 << "\n";
                                           // as it recive char 1 so we have to convert it intiger one by subtracting the 48
                                           creatSet(buffer[0] - 48);
                                           memset(buffer, '\0', 1024);
@@ -505,8 +698,8 @@ void msgResv(CliDetails client) {
                                           for (int32_t j = 0; buffer[j]; ++j) {
                                                  arr[j] = buffer[j + 2];
                                           }
-                                          std::cout<<RED<<"ATTENTION! "<<RESET<<"New Answer added in set : "<<buffer[0]-48<<"\n";
-//                                          printf("attention !answer in subset %d\n", buffer[0] - 48);
+                                          std::cout << RED << "\nATTENTION! " << RESET << "New Answer added in set : " << buffer[0] - 48 << "\n";
+                                          //                                          printf("attention !answer in subset %d\n", buffer[0] - 48);
                                           createSubSet(buffer[0] - 48, arr);
                                           memset(buffer, '\0', SIZE);
                                           continue;
@@ -542,7 +735,7 @@ void messageBroadcast(CliDetails client) {
 /***=============== save option ====================***/
 
 void option(CliDetails client) {
-       while (true) {
+       while (client->finalExit) {
               int32_t input;
               std::cout << "\n----------Select Option---------\n";
               std::cout << "1. CHAT\n";
@@ -562,7 +755,8 @@ void option(CliDetails client) {
                      case 1:
                             client->ChatMsgStatus = true;
                             system("clear");
-                            std::cout << "entering into chat mode\n";
+                            std::cout << BLUE << "entering into chat mode\n"
+                                      << RESET;
                             printChat(client);
                             msgSend(client);
                             client->ChatMsgStatus = false;
@@ -581,29 +775,32 @@ void option(CliDetails client) {
                             case5_CreateSubset(client);
                             break;
                      case 5:
+                            client->finalExit = false;
                             system("clear");
                             printf("4. shutting down server and cient \n");
                             char exitNote[5];
                             memset(exitNote, '\0', sizeof exitNote);
-                            exitNote[0]='1';
-                            exitNote[1]='e';
-                            exitNote[2]='\0';
+                            exitNote[0] = '1';
+                            exitNote[1] = 'e';
+                            exitNote[2] = '\0';
                             for (int i = 0; i < client->NumberOfClient; ++i) {
-                                   if (client->whichClient[i]!=-1){
+                                   if (client->whichClient[i] != -1) {
                                           send(client->whichClient[i], exitNote, strlen(exitNote), 0);
                                    }
-
                             }
+                            client->finalExit = false;
+                            //                            MemoryManagement();
+                            //                            ChatMemoryManagement();
                             close(client->serverSocketFileDiscription);
                             shutdown(client->serverSocketFileDiscription, SHUT_RDWR);
                             for (int i = 0; i < client->NumberOfClient; ++i) {
                                    close(client->whichClient[i]);
                                    shutdown(client->whichClient[i], SHUT_RDWR);
                             }
-                            free(chatHead);   // there are  much more memory alloted from heap but not freeing
-                            free(chatTail);   // there are  much more memory alloted from heap but not freeing
-                            free(head);       // there are  much more memory alloted from heap but not freeing
-                            free(tail);       // there are  much more memory alloted from heap but not freeing
+                            //                            free(chatHead);   // there are  much more memory alloted from heap but not freeing
+                            //                            free(chatTail);   // there are  much more memory alloted from heap but not freeing
+                            //                            free(head);       // there are  much more memory alloted from heap but not freeing
+                            //                            free(tail);       // there are  much more memory alloted from heap but not freeing
                             exit(EXIT_SUCCESS);
                      default:
                             system("clear");
@@ -635,8 +832,8 @@ void printChat(CliDetails client) {
 
        while (temp) {
               if (client->broadCastingPrevMsgToClient) {
-                     std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                     send(client->whichClient[client->NumberOfClient-1], temp->msg, strlen(temp->msg), 0);
+                     std::this_thread::sleep_for(std::chrono::seconds(1));
+                     send(client->whichClient[client->NumberOfClient - 1], temp->msg, strlen(temp->msg), 0);
                      temp = temp->next;
                      continue;
               }
@@ -646,6 +843,12 @@ void printChat(CliDetails client) {
                      }
               }
               temp = temp->next;
+       }
+
+       if (client->broadCastingPrevMsgToClient){
+              char msg[]={'1','Z','\0'};
+              std::this_thread::sleep_for(std::chrono::seconds(1));
+              send(client->whichClient[client->NumberOfClient-1], msg, strlen(msg),0);
        }
 }
 
@@ -685,7 +888,7 @@ void printSubSet(int setNumber) {
               temp = temp->next;
        }
        system("clear");
-       std::cout << "---------------printing setNumber-----------------  " << setNumber << " :- \n";
+       std::cout << "-------printing setNumber-------  " << setNumber << " :- \n";
        subNode *run = temp->down;
        int x = 0;
        while (run) {
@@ -698,7 +901,7 @@ void printSubSet(int setNumber) {
 bool printSuperSet(bool check, int setnumber) {
        node *temp = head;
        if (!check) {
-              std::cout << "----------------printing set-----------------\n";
+              std::cout << "-----------printing set---------\n";
        }
        while (temp) {
               if (check) {
@@ -739,6 +942,12 @@ void case3_CreateSet(CliDetails client) {
               if (setNumber == -1) {
                      return;
               }
+              if (setNumber > 9 or setNumber < 0) {
+                     system("clear");
+                     std::cout << RED << setNumber << " is not allowed to create maximum allowed set is between 1 to 9 \n"
+                               << RESET;
+                     continue;
+              }
               if (printSuperSet(true, setNumber)) {
                      std::cout << RED << "Set Already there\n"
                                << RESET;
@@ -762,7 +971,7 @@ void case3_CreateSet(CliDetails client) {
 void case5_CreateSubset(CliDetails client) {
        system("clear");
        printSuperSet(false, 0);
-       std::cout << "which set: or -1 for exit ";
+       std::cout << "which set: or -1 for exit: ";
        int setNumbet;
        std::cin >> setNumbet;
        if (std::cin.fail()) {
@@ -777,7 +986,7 @@ void case5_CreateSubset(CliDetails client) {
        }
        if (printSuperSet(true, setNumbet)) {
               char Data[SIZE];
-              char line[250];
+              char line[SIZE];
               uint64_t i = 0;
               std::cout << BLUE << "Copy Paste you Answer ' " << setNumbet << " ' -1 for exit \n"
                         << RESET;
@@ -812,15 +1021,12 @@ void case5_CreateSubset(CliDetails client) {
        }
 }
 
-
-
-
 // show answer to user
 void case2_ShowAnswer(CliDetails client) {
        system("clear");
        int setNumber;
        printSuperSet(false, 0);          // call set print function
-       std::cout << "Enter set number: or -1 for back ";
+       std::cout << "Enter set number: or -1 for back:  ";
        std::cin >> setNumber;
        if (std::cin.fail()) {
               std::cin.clear();
@@ -831,6 +1037,13 @@ void case2_ShowAnswer(CliDetails client) {
        if (setNumber == -1) {
               return;
        }
+       if (setNumber > 9 or 0 > setNumber) {
+              system("clear");
+              std::cout << RED << " WARNING set number only allowed between 0 to 9 \n"
+                        << RESET;
+              return;
+       }
+
        if (!printSuperSet(true, setNumber)) {
               std::cout << RED << "Set not exist\n"
                         << RESET;
@@ -862,4 +1075,37 @@ void case2_ShowAnswer(CliDetails client) {
        } else {
               printSubSet(setNumber);
        }
+}
+
+/*
+ * Memory management related fxn
+ */
+
+void MemoryManagement() {
+       auto *temp=head;
+       while (temp) {
+              node *Setnext = temp->next;
+              subNode *currentSubnode = temp->down;
+              while (temp->down) {
+                     subNode *SubNodedown = currentSubnode->down;
+                     delete (SubNodedown);
+                     currentSubnode = SubNodedown;
+              }
+              delete temp;
+              temp = Setnext;
+       }
+       head = nullptr;
+       return;
+}
+
+// chat delete
+
+void ChatMemoryManagement() {
+       auto *temp= chatHead;
+       while (temp) {
+              Chat *ChatNext = temp->next;
+              delete temp;
+              temp= ChatNext;
+       }
+       chatHead= nullptr;
 }
