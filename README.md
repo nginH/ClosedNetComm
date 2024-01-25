@@ -1,3 +1,21 @@
+⚠️ **Caution** ⚠️
+  =============================
+
+
+     * yet not fully tested </h3>
+     * if you find any bug or error please report it to me </h3>
+     * if you have any suggestion please let me know </h3>
+
+ <div style="color:#D2042D;"><h3>Use at your own risk this is just for <s>learning</s> cheating purpose <br>
+ The main idea behind this project is to cheat in exam by sending the question to your friend and get the answer from him/her and send it to your friends in exam hall**😈
+</div>
+ <div style="color:#EDBB89;">
+ <h3>As in the exam hall you dont have access to internet (but you have LAN cable plugged in to your computer so this program exploit this loop hole to send and receive message from your friend you just have to import this header file and use call a single function with parameter ip address and port number and you are good to go )
+</div>
+
+## The explanation below may not correspond to the cpp file in this repository, but the idea behind this program is the same. This explanation is from a previous version of the program and has not been updated. * <div style="color:#76D7C4  ;">coz i'm lazy af 😴</div>
+
+
 Contents
 ========
 * [Prerequisites](#Prerequisites)
@@ -108,7 +126,8 @@ int *acceptFxn (int *, struct sockaddr*, int *);
 ### Now come to main() fxn;
 
 <div id="socket">
-first we have to create a socket using [socket()](#https://pubs.opengroup.org/onlinepubs/009695399/functions/socket.html) function<br>
+first we have to create a socket using [socket()](https://pubs.opengroup.org/onlinepubs/009695399/functions/socket.html) function<br>
+
 ```c 
 int serverSocketFileDiscription= socket(AF_INET, SOCK_STREAM, 0);
 // we have to cross check the socket is created or not
