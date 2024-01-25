@@ -1,3 +1,11 @@
+<center>
+
+# NoTraceClassChat
+
+</center>
+
+----------------
+
 ⚠️ **Caution** ⚠️
   =============================
 
@@ -10,7 +18,7 @@
  The main idea behind this project is to cheat in exam by sending the question to your friend and get the answer from him/her and send it to your friends in exam hall**😈
 </div>
  <div style="color:#EDBB89;">
- <h3>As in the exam hall you dont have access to internet (but you have LAN cable plugged in to your computer so this program exploit this loop hole to send and receive message from your friend you just have to import this header file and use call a single function with parameter ip address and port number and you are good to go )
+ <h3>As in the exam hall you don't have access to internet (but you have LAN cable plugged in to your computer so this program exploit this loop hole to send and receive message from your friend you just have to import this header file and use call a single function with parameter ip address and port number and you are good to go )
 </div>
 
 ## The explanation below may not correspond to the cpp file in this repository, but the idea behind this program is the same. This explanation is from a previous version of the program and has not been updated. * <div style="color:#76D7C4  ;">coz i'm lazy af 😴</div>
