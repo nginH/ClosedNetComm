@@ -391,7 +391,7 @@ int connection_status = connect(client_socket, (struct sockaddr *)&server_addres
 ```
 Upon successful completion, connect() shall return 0; otherwise, -1 shall be returned and errno set to indicate the error.<br>
 
-### <div id="C_send")>Now we can send and receive data using send() and recv() function<br>
+### <div id="C_send">Now we can send and receive data using send() and recv() function<br>
 ```c
 int send_result = send(client_socket, client_message, sizeof(client_message), 0);
 ```
