@@ -1,5 +1,5 @@
 # shellcheck disable=SC1035
-!%bin/zsh
+#!/bin/bash
 #this bash script show the open potr on your computer 
 while true
   do
