@@ -10,16 +10,28 @@
   =============================
 
 
-     * yet not fully tested </h3>
-     * if you find any bug or error please report it to me </h3>
-     * if you have any suggestion please let me know </h3>
+     * yet not fully tested 
+     * if you find any bug or error please report it to me
+     * if you have any suggestion please let me know 
 
- <div style="color:#D2042D;"><h3>Use at your own risk this is just for <s>learning</s> cheating purpose <br>
- The main idea behind this project is to cheat in exam by sending the question to your friend and get the answer from him/her and send it to your friends in exam hall**😈
+<div style="color:#D2042D;">
+<h3>Understanding Network Communication (Educational Use Only)</h3>
+
+This project explores potential methods for local network communication, focusing on message transmission between devices on a closed network. It emphasizes the importance of responsible use and potential security implications.
 </div>
- <div style="color:#EDBB89;">
- <h3>As in the exam hall you don't have access to internet (but you have LAN cable plugged in to your computer so this program exploit this loop hole to send and receive message from your friend you just have to import this header file and use call a single function with parameter ip address and port number and you are good to go )
-</div>
+
+<div style="color:#EDBB89;">
+<h3>Local Communication Exploration (Hypothetical Scenario)</h3>
+
+Disclaimer: This scenario is for educational purposes only and does not represent recommended practices.
+
+Imagine a hypothetical situation where two devices on a physically isolated network need to exchange data. This project could explore techniques for establishing communication within such a controlled environment, highlighting the potential security considerations and limitations.
+
+Key Points:
+
+Communication within a closed network (not connected to the internet).
+Focus on understanding message transmission mechanisms.
+Importance of responsible use and potential security risks. </div>
 
 ## The explanation below may not correspond to the cpp file in this repository, but the idea behind this program is the same. This explanation is from a previous version of the program and has not been updated. * <div style="color:#76D7C4  ;">coz i'm lazy af 😴</div>
 
