@@ -33,7 +33,7 @@ Communication within a closed network (not connected to the internet).
 Focus on understanding message transmission mechanisms.
 Importance of responsible use and potential security risks. </div>
 
-## The explanation below may not correspond to the cpp file in this repository, but the idea behind this program is the same. This explanation is from a previous version of the program and has not been updated. * <div style="color:#76D7C4  ;">coz i'm lazy af 😴</div>
+### Please note that the explanation provided below may not accurately reflect the current version of the program in this repository. This explanation is based on a previous iteration of the program and has not been updated accordingly.
 
 
 Contents
