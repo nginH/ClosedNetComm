@@ -4,20 +4,19 @@
 
 </center>
 
-----------------
+---
 
 ⚠️ **Caution** ⚠️
-  =============================
+=============================
 
-
-     * yet not fully tested 
-     * if you find any bug or error please report it to me
-     * if you have any suggestion please let me know 
+* This program is not yet fully tested.
+* If you encounter any bugs or errors, please report them to me.
+* If you have any suggestions, please feel free to share them with me.
 
 <div style="color:#D2042D;">
 <h3>Understanding Network Communication (Educational Use Only)</h3>
 
-This project explores potential methods for local network communication, focusing on message transmission between devices on a closed network. It emphasizes the importance of responsible use and potential security implications.
+This project delves into potential methods for local network communication, focusing on message transmission between devices on a closed network. It underscores the importance of responsible use and potential security implications.
 </div>
 
 <div style="color:#EDBB89;">
@@ -29,11 +28,13 @@ Imagine a hypothetical situation where two devices on a physically isolated netw
 
 Key Points:
 
-Communication within a closed network (not connected to the internet).
-Focus on understanding message transmission mechanisms.
-Importance of responsible use and potential security risks. </div>
+* Communication within a closed network (not connected to the internet).
+* Focus on understanding message transmission mechanisms.
+* Importance of responsible use and potential security risks.
+</div>
 
 ### Please note that the explanation provided below may not accurately reflect the current version of the program in this repository. This explanation is based on a previous iteration of the program and has not been updated accordingly.
+
 
 
 Contents
