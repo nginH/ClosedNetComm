@@ -460,6 +460,7 @@ void case3_CreateSet(ClientDetails client) {
               if (printSuperSet(true, setNumber)) {
                      std::cout << RED << "Set Already there\n"
                                << RESET;
+               std::this_thread::sleep_for(std::chrono::seconds(2));
                      continue;
               } else {
                      creatSet(setNumber);
