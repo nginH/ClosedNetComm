@@ -168,17 +168,18 @@ void MemoryManagement();
 void ChatMemoryManagement();
 
 void internetCheck(void) {
-     int32_t pipe_arr[2];
-     char buf[SIZE];
-     pipe(pipe_arr);
-     if (fork() == 0) {
-          dup2(pipe_arr[1], STDOUT_FILENO);
-          execl("/sbin/ping", "ping", "-c 1", "8.8.8.8", (char *)nullptr);
-     } else {
-          wait(NULL);
-          read(pipe_arr[0], buf, SIZE);
-          printf("%s\n", buf);
-     }
+     std::cout<<"internet check\n";
+     // int32_t pipe_arr[2];
+     // char buf[SIZE];
+     // pipe(pipe_arr);
+     // if (fork() == 0) {
+     //      dup2(pipe_arr[1], STDOUT_FILENO);
+     //      execl("/sbin/ping", "ping", "-c 1", "8.8.8.8", (char *)nullptr);
+     // } else {
+     //      wait(NULL);
+     //      read(pipe_arr[0], buf, SIZE);
+     //      printf("%s\n", buf);
+     // }
 }
 /* auto dist problum in  */
      // void __attrubute__((noreturn)) exit(int32_t status);
