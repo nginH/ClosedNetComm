@@ -149,7 +149,9 @@ void cleanUp(CliDetails client) {
 }
 
 
-int32_t main(int argc, char *argv[]) {
+int32_t server(char ip[], int port, int logging) {
+      int argv[2];
+      argv[1]=logging;
       auto clientDetails = new ClientDetails(0);
       system("clear");
       std::thread t1(cleanUp, clientDetails);
