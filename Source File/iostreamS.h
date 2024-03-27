@@ -1,11 +1,5 @@
-
 #ifndef iostreamS_h
 #define iostreamS_h
-
-     // instructing compiler for level 3 optimization
-     // for increasing the performance of the program
-     // #pragma GCC optimize("03")
-
 /* MIT License
 
 Copyright (c) 2023-2024
@@ -61,8 +55,9 @@ SOFTWARE.
 #define __DARWIN_FD_ISSET(fd, p) FD_ISSET(fd, p)
 #endif
 
+uint32_t port = 6969;
 int32_t backlog = 3;
-uint32_t SIZE = 1024;
+const uint32_t SIZE = 1024;
 bool log_enabled = false;
 #define RESET "\033[0m"
 #define RED "\033[31m"
@@ -154,10 +149,7 @@ void cleanUp(CliDetails client) {
 }
 
 
-
-int32_t server(char ip[16], int port, int loging ) {
-     int argv[2];
-     argv[1]=loging;
+int32_t main(int argc, char *argv[]) {
       auto clientDetails = new ClientDetails(0);
       system("clear");
       std::thread t1(cleanUp, clientDetails);
@@ -188,7 +180,7 @@ int32_t server(char ip[16], int port, int loging ) {
       struct sockaddr_in address{};
       address.sin_family = AF_INET;
       address.sin_port = htons(port);
-      inet_pton(AF_INET, ip, &address.sin_addr.s_addr);
+      inet_pton(AF_INET, "127.0.0.1", &address.sin_addr.s_addr);
       int32_t BindResult = bind(serverSocketFileDiscription, (struct sockaddr *) &address, sizeof address);
       //  BindResult?exit(2):printf("binding successful\n");
       if (BindResult == 0) {
@@ -383,5 +375,5 @@ void ChatMemoryManagement() {
      if(log_enabled) system("clear");
 }
 // memory leak management
-
 #endif /* iostreamS_h */
+
