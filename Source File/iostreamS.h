@@ -34,6 +34,7 @@ SOFTWARE.
 #include <iostream>
 #include <thread>
 #include <unistd.h>
+#include <vector>
 
 #ifdef __MACH__
 #include <arpa/inet.h>
