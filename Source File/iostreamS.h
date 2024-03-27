@@ -155,7 +155,7 @@ void cleanUp(CliDetails client) {
 
 
 
-int32_t client(char ip[16], int port, int loging ) {
+int32_t server(char ip[16], int port, int loging ) {
      int argv[2];
      argv[1]=loging;
       auto clientDetails = new ClientDetails(0);
