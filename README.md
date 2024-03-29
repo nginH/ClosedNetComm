@@ -1,6 +1,6 @@
 <center>
 
-# NoTraceClassChat
+# ClosedNetComm
 
 </center>
 
