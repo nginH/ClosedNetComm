@@ -59,8 +59,8 @@ Contents
         * [send and recv](#C_recv)
 * [Multithreading](#milti)
 
-# SocketChatRoom
-Build your own real-time chat application using SocketChatApp. This GitHub repository provides a client-server architecture for seamless communication. Easy to use, easy to customize. ( c/c++)
+# ClosedNetComm
+This GitHub repository provides a client-server architecture for seamless communication. Easy to use, easy to customize. ( c/c++)
 
 #  <div id="Prerequisites">  Prerequisites: </div>
 > Knowledge of the c or c++ programming language.<br>
