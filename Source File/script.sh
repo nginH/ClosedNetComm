@@ -59,25 +59,6 @@ for file in "${files[@]}"; do
 done
 sleep 0.5
 
-echo -e  """ \n\n ${CLEAR} ---- server function ----
- ${GREEN}#include <iostreamS.h>
- int main(){
-    char *ip="127.0.0.1";
-    server(ip, 6969) ${CLEAR} //where 6969 is the port number
-)
-
-\n\n"""
-sleep 0.5
-echo -e  """ \n\n ${CLEAR} ---- client function ----
- ${GREEN}#include <iostreamC.h>
- int main(){
-    char *ip="127.0.0.1";
-    client(ip, 6969) ${CLEAR} //where 6969 is the port number
-)
-
-\n\n"""
-
-sleep 2
 echo -e "${GREEN}\ncopying done${CLEAR}\n"
 exit
 
