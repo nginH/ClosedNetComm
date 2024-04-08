@@ -170,13 +170,6 @@
            std::cout<<"Hello world\n";
      }
 // driver code
-     int32_t client(char *ip, int port);
-     int32_t  main(void ) {
-           char ip[]="127.0.0.1";
-           int port=6969;
-           client(ip, port);
-           return 0;
-     }
 
      int32_t client(char *ip, int port) {
            system("clear");
