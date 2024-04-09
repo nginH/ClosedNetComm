@@ -64,9 +64,8 @@ int main(){
 g++ yourFileName.cpp -o outpuFileName -std=c++20 -pthread && ./outputFileName
 ```
 
-<video autoplay loop playsinline>
- <source src="https://github.com/Harsh69k/ClosedNetComm/assets/80211435/27bc13bf-a944-4d1f-a309-286ec1d4c96e
-" type="video/mp4">
+<video autoplay loop muted playsinline>
+    <source src="https://github.com/Harsh69k/ClosedNetComm/assets/80211435/27bc13bf-a944-4d1f-a309-286ec1d4c96e" type="video/mp4">
 </video>
 
 
