@@ -63,6 +63,13 @@ int main(){
 ```Terminal
 g++ yourFileName.cpp -o outpuFileName -std=c++20 -pthread && ./outputFileName
 ```
+# server (log enabled)
+
+<video autoplay loop muted playsinline>
+ <source src="https://github.com/Harsh69k/ClosedNetComm/assets/80211435/46e97db0-d547-476f-b154-5f6a6b2cec4b" type="video/mp4">
+</video>_
+
+
 
 [//]: # (\TODO video of the serer and client running)
 
