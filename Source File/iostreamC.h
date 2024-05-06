@@ -44,7 +44,8 @@
 #include <iostream>
 #include <thread>
 #include <unistd.h>
-
+#include <vector>
+#include <unordered_map>
 #ifdef __MACH__
 
 #include <arpa/inet.h>
