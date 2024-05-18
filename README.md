@@ -31,7 +31,7 @@ Clone this repository<br>
 Open terminal
 
 ```terminal  
- cd closedNetComm/'Source File'
+ cd ClosedNetComm/'Source File'
  ./script.sh
 ````
 > This script will copy the code inside to the 'Source File' to the directory where the C++ header file  is present 
