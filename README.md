@@ -41,7 +41,7 @@ code for server
 ```c++
 #include <server.h>
 int main(){
-      char ip="127.0.0.1";
+      char ip[]="127.0.0.1";
       int port =6969;
       // server( ip_address, portNumber, logging ( 1 for enable/ 0 for disable)
       server(ip, port, 1);  
@@ -53,7 +53,7 @@ code for client
 ```c++
 #include <client.h>
 int main(){
-      char ip="127.0.0.1";
+      char ip[]="127.0.0.1";
       int port =6969;
       client(ip, port);
 }
