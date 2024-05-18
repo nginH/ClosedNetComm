@@ -39,7 +39,7 @@ Open terminal
 
 code for server 
 ```c++
-#include<iostreamS.H>
+#include <server.h>
 int main(){
       char ip="127.0.0.1";
       int port =6969;
@@ -51,7 +51,7 @@ int main(){
 code for client
 
 ```c++
-#include <iostreamC.h>
+#include <client.h>
 int main(){
       char ip="127.0.0.1";
       int port =6969;
