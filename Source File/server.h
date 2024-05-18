@@ -1,5 +1,5 @@
-#ifndef iostreamS_h
-#define iostreamS_h
+#ifndef server_h
+#define server_h
 /************************************************************************
 
  "┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐\n"\
@@ -446,5 +446,5 @@ void ChatMemoryManagement() {
 }
 // memory leak management
 
-#endif /* iostreamS_h */
+#endif /* server_h */
 
