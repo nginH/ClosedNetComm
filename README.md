@@ -37,7 +37,7 @@ Open terminal
 > This script will copy the code inside to the 'Source File' to the directory where the C++ header file  is present 
 
 
-code for server 
+code for server
 ```c++
 #include <server.h>
 int main(){
@@ -58,6 +58,8 @@ int main(){
       client(ip, port);
 }
 ```
+
+>> **CAUTION** while using this code select port number above 1024 cause below 1024 are reserved by the operating system for the system services
 
 ### compile your code
 ```Terminal
