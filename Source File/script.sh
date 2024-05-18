@@ -46,7 +46,7 @@ else
   exit 1
 fi
 
-files=("iostreamS.h" "iostreamC.h")
+files=("server.h" "client.h")
 
 if [ ! -d "$source_dir" ]; then
   log_message "${RED}" "Error: Source directory ${CLEAR} '$source_dir'${RED} does not exist.${CLEAR} "
